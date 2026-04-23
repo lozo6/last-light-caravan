@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 
 const CARD_DATA = {
   CREW_WATER_CACHE:       { name: 'Water Cache',      color: 'bg-blue-900 border-blue-600' },
@@ -145,44 +145,78 @@ function CardTooltip({ cardId }) {
   const categoryColor = isSab ? 'text-red-400' : isCurse ? 'text-purple-400' : isEnc ? 'text-amber-400' : 'text-green-400'
 
   return (
-    <div className="fixed z-[9999] bottom-36 left-1/2 -translate-x-1/2 w-48 bg-stone-950 border border-stone-600 rounded-lg p-3 shadow-lg pointer-events-none">
+    <div className="fixed z-[9999] bottom-36 left-1/2 -translate-x-1/2 w-56 bg-stone-950 border border-stone-600 rounded-lg p-3 shadow-xl">
       <p className="text-xs font-semibold text-stone-100 mb-1">{card.name}</p>
       {categoryLabel && <p className={`text-xs mb-2 ${categoryColor}`}>{categoryLabel}</p>}
-      {tip?.effect  && <p className="text-xs text-stone-300 mb-2 leading-relaxed">{tip.effect}</p>}
-      {tip?.flavour && <p className="text-xs text-stone-500 italic leading-relaxed border-t border-stone-700 pt-2">"{tip.flavour}"</p>}
-
+      {tip?.effect   && <p className="text-xs text-stone-300 mb-2 leading-relaxed">{tip.effect}</p>}
+      {tip?.flavour  && <p className="text-xs text-stone-500 italic leading-relaxed border-t border-stone-700 pt-2">"{tip.flavour}"</p>}
+      <p className="text-xs text-stone-600 mt-2 text-center">tap anywhere to dismiss</p>
     </div>
   )
 }
 
 function CardComponent({ cardId, selected, onClick, disabled }) {
-  const card  = CARD_DATA[cardId] ?? { name: cardId, color: 'bg-stone-800 border-stone-600' }
-  const isSab = cardId?.startsWith('SAB_')
+  const card         = CARD_DATA[cardId] ?? { name: cardId, color: 'bg-stone-800 border-stone-600' }
+  const isSab        = cardId?.startsWith('SAB_')
   const [showTip, setShowTip] = useState(false)
+  const longPressRef = useRef(null)
+
+  function handleTouchStart(e) {
+    longPressRef.current = setTimeout(() => {
+      e.preventDefault()
+      setShowTip(true)
+    }, 500)
+  }
+
+  function handleTouchEnd() {
+    clearTimeout(longPressRef.current)
+  }
+
+  function handleTouchMove() {
+    clearTimeout(longPressRef.current)
+  }
 
   return (
-    <div className="relative" onMouseEnter={() => setShowTip(true)} onMouseLeave={() => setShowTip(false)}>
-      {showTip && <CardTooltip cardId={cardId} />}
-      <button
-        onClick={onClick}
-        disabled={disabled}
-        className={`
-          relative border-2 rounded-lg p-2 text-left transition-all duration-150 w-20 min-h-16
-          ${card.color}
-          ${selected ? 'ring-2 ring-amber-400 scale-105' : ''}
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'}
-        `}
+    <>
+      {/* Tap-anywhere overlay to dismiss tooltip on mobile */}
+      {showTip && (
+        <div
+          className="fixed inset-0 z-[9998]"
+          onTouchStart={() => setShowTip(false)}
+          onClick={() => setShowTip(false)}
+        />
+      )}
+      <div
+        className="relative"
+        onMouseEnter={() => setShowTip(true)}
+        onMouseLeave={() => setShowTip(false)}
       >
-        <p className="text-xs font-semibold text-stone-100 leading-none">{card.name}</p>
-        {isSab && <p className="text-xs text-red-400 mt-0.5">⚠ Wretch</p>}
-      </button>
-    </div>
+        {showTip && <CardTooltip cardId={cardId} />}
+        <button
+          onClick={onClick}
+          disabled={disabled}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onTouchMove={handleTouchMove}
+          className={`
+            relative border-2 rounded-lg p-2 text-left transition-all duration-150 w-20 min-h-16
+            ${card.color}
+            ${selected ? 'ring-2 ring-amber-400 scale-105' : ''}
+            ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'}
+          `}
+        >
+          <p className="text-xs font-semibold text-stone-100 leading-none">{card.name}</p>
+          {isSab && <p className="text-xs text-red-400 mt-0.5">⚠ Wretch</p>}
+        </button>
+      </div>
+    </>
   )
 }
 
 // Standalone component so useState for tooltip is valid (not inside .map())
 function DrawnCard({ ci, showEffect = false, log = [] }) {
   const [showTip, setShowTip] = useState(false)
+  const longPressRef = useRef(null)
   const cardDef  = CARD_DATA[ci.cardId]
   const cardName = cardDef?.name ?? ci.cardId
   const isSab    = ci.cardId?.startsWith('SAB_')
@@ -196,32 +230,54 @@ function DrawnCard({ ci, showEffect = false, log = [] }) {
     ? cardLog.message.replace(`[${cardName}]`, '').trim()
     : null
 
+  function handleTouchStart(e) {
+    longPressRef.current = setTimeout(() => {
+      e.preventDefault()
+      setShowTip(true)
+    }, 500)
+  }
+
+  function handleTouchEnd() { clearTimeout(longPressRef.current) }
+  function handleTouchMove() { clearTimeout(longPressRef.current) }
+
   return (
-    <div
-      className="relative"
-      onMouseEnter={() => setShowTip(true)}
-      onMouseLeave={() => setShowTip(false)}
-    >
-      {showTip && <CardTooltip cardId={ci.cardId} />}
-      <div className={`relative border-2 rounded-lg p-3 flex flex-col gap-1 w-36
-        ${cardDef?.color ?? 'bg-stone-800 border-stone-600'}`}
+    <>
+      {showTip && (
+        <div
+          className="fixed inset-0 z-[9998]"
+          onTouchStart={() => setShowTip(false)}
+          onClick={() => setShowTip(false)}
+        />
+      )}
+      <div
+        className="relative"
+        onMouseEnter={() => setShowTip(true)}
+        onMouseLeave={() => setShowTip(false)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchMove}
       >
-        <span className="absolute top-1 right-1 text-xs text-stone-400 font-mono">
-          #{ci.position + 1}
-        </span>
-        <p className="text-xs font-semibold text-stone-100 pr-5 leading-tight">
-          {cardName}
-        </p>
-        {isSab   && <span className="text-xs text-red-400">⚠ Saboteur</span>}
-        {isCurse && <span className="text-xs text-purple-400">☠ Curse</span>}
-        {isEnc   && <span className="text-xs text-amber-400">⚡ Encounter</span>}
-        {effectText && (
-          <p className="text-xs text-stone-300 leading-tight mt-1 border-t border-stone-600 pt-1">
-            {effectText}
+        {showTip && <CardTooltip cardId={ci.cardId} />}
+        <div className={`relative border-2 rounded-lg p-3 flex flex-col gap-1 w-36
+          ${cardDef?.color ?? 'bg-stone-800 border-stone-600'}`}
+        >
+          <span className="absolute top-1 right-1 text-xs text-stone-400 font-mono">
+            #{ci.position + 1}
+          </span>
+          <p className="text-xs font-semibold text-stone-100 pr-5 leading-tight">
+            {cardName}
           </p>
-        )}
+          {isSab   && <span className="text-xs text-red-400">⚠ Saboteur</span>}
+          {isCurse && <span className="text-xs text-purple-400">☠ Curse</span>}
+          {isEnc   && <span className="text-xs text-amber-400">⚡ Encounter</span>}
+          {effectText && (
+            <p className="text-xs text-stone-300 leading-tight mt-1 border-t border-stone-600 pt-1">
+              {effectText}
+            </p>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
