@@ -46,6 +46,46 @@ const CARD_DATA = {
   CURSE_SUNSTROKE:        { name: 'Sunstroke',         color: 'bg-purple-900 border-purple-700' },
 }
 
+const CARD_TOOLTIPS = {
+  CREW_WATER_CACHE:       { effect: "Water +2. Bonus +1 if Water is below 5.",                       flavour: "Someone remembered a buried jug from an old trade route." },
+  CREW_FOOD_FORAGE:       { effect: "Food +2. Bonus +1 if Food was lost yesterday.",                  flavour: "The scrublands give up their bitter secrets." },
+  CREW_CAMPFIRE_STORY:    { effect: "Morale +2. Bonus +1 if Morale is the lowest resource.",          flavour: "An old tune, half-remembered. It still works." },
+  CREW_REPAIR_KIT:        { effect: "Wagon +2. Bonus +2 if Wagon is below 3.",                        flavour: "The crack in the axle has been there since Dustveil. Today someone fixed it." },
+  CREW_CLEAR_MAP:         { effect: "Cancels the next hazard card resolved today.",                   flavour: "The route is clear. At least for now." },
+  CREW_SCOUTS_INSIGHT:    { effect: "Reveals tomorrow's Dawn Event to all players.",                  flavour: "What waits at dawn is no longer a mystery." },
+  CREW_EXTRA_RATIONS:     { effect: "Food +1, Morale +1.",                                            flavour: "A hidden cache, shared equally." },
+  CREW_MAKESHIFT_SHELTER: { effect: "Blocks the next Saboteur card effect resolved today.",           flavour: "Canvas and rope. It won't hold forever, but it holds." },
+  CREW_FRESH_TRACKS:      { effect: "Allows reordering of the next drawn cards.",                     flavour: "The scout reads the dunes like text." },
+  CREW_DESERT_HERBS:      { effect: "Removes one active persistent negative effect.",                 flavour: "Bitter medicine. The kind that actually works." },
+  SAB_WATER_LEAK:         { effect: "Water -2. Persistent: Water -1/day for 1 day.",                  flavour: "A small hole. Unnoticed until it is too late." },
+  SAB_SPOILED_RATIONS:    { effect: "Food -2. Bonus -1 if Food is above 7.",                          flavour: "The smell should have warned them. Nobody checked." },
+  SAB_FALSE_MAP:          { effect: "Adds Feral Nomads encounter to tomorrow's deck.",                flavour: "A perfect forgery. The caravan won't realize until they're lost." },
+  SAB_BROKEN_AXLE:        { effect: "Wagon -2. Weakens the next Repair Kit played.",                  flavour: "One clean blow to the wood, hidden under mud." },
+  SAB_DUST_CLOUD:         { effect: "Shuffles the order of remaining drawn cards.",                   flavour: "The cards fall differently when the wind changes." },
+  SAB_PANIC_WHISPER:      { effect: "Morale -2. Bonus -1 if Morale is below 4.",                      flavour: "Did you hear that? In the dark?" },
+  SAB_SAND_SICKNESS:      { effect: "Persistent: Morale -1/day for 2 days.",                          flavour: "A fever that moves through the camp like a rumour." },
+  SAB_MIRAGE_OASIS:       { effect: "Inverts the next positive resource gain into a loss.",            flavour: "Water on the horizon. The crew chases it for hours." },
+  SAB_HIDDEN_TRAP:        { effect: "Causes the first Encounter card today to resolve twice.",         flavour: "Set in the night. Triggered at dawn." },
+  SAB_INFESTED_SUPPLIES:  { effect: "Food -1, Water -1.",                                              flavour: "They got into everything." },
+  CURSE_HEAT_EXHAUSTION:  { effect: "Persistent: Morale -1/day for 2 days.",                          flavour: "Someone falls behind. The pace suffers." },
+  CURSE_SCORPION_STING:   { effect: "Food -1, Morale -1.",                                            flavour: "Found in the bedroll at dawn. A bad omen and a worse morning." },
+  CURSE_CRACKED_CANTEEN:  { effect: "Water -1. Persistent: Water -1/day for 1 day.",                  flavour: "The seal gave out overnight. Half a day of water, gone." },
+  CURSE_LOOSE_WHEEL:      { effect: "Wagon -1.",                                                       flavour: "The road took its toll. It always does." },
+  CURSE_DESERT_WIND:      { effect: "Food -1, Water -1.",                                              flavour: "Stripped supplies in the night. No one's fault. No one's comfort." },
+  CURSE_SUNSTROKE:        { effect: "Morale -2.",                                                      flavour: "The heat claims another. The caravan slows." },
+  ENC_WILD_JACKALS:       { effect: "Food -2.",                                                        flavour: "They come for the food. They always do." },
+  ENC_DUST_DEVIL:         { effect: "Redistributes a random card effect.",                             flavour: "The column of sand twists between the wagons, indifferent." },
+  ENC_MERCHANT_CARAVAN:   { effect: "Food -1, Water +2.",                                              flavour: "They have what you need. For a price." },
+  ENC_CANYON_NARROW:      { effect: "Forces one extra card draw today.",                               flavour: "The walls close in. The deck grows heavier." },
+  ENC_RUINED_SHRINE:      { effect: "Morale +2, Wagon -1.",                                           flavour: "Something was worshipped here. Something still lingers." },
+  ENC_FERAL_NOMADS:       { effect: "Food -1, Morale -1.",                                            flavour: "Desperate people do desperate things." },
+  ENC_DESERT_BLOOM:       { effect: "Food +1, Water +1.",                                              flavour: "Life where none should be. You take what you can." },
+  ENC_SAND_WYRM_TRACKS:   { effect: "Adds a Sandstorm to tomorrow's deck.",                           flavour: "Something enormous passed this way. Recently." },
+  ENC_SANDSTORM:          { effect: "Morale -1, Wagon -2.",                                           flavour: "The sky turns orange. You have minutes." },
+  ENC_OASIS_REAL:         { effect: "Water +3. Bonus +1 if Water is below 4.",                        flavour: "It is real. The water is cold and clean." },
+}
+
+
 const RESOURCE_ICONS = {
   food:      { icon: '🌾', label: 'Food',   color: 'text-green-400' },
   water:     { icon: '💧', label: 'Water',  color: 'text-blue-400' },
@@ -93,26 +133,52 @@ function ResourceBar({ resource, value, max = 10 }) {
   )
 }
 
+function CardTooltip({ cardId }) {
+  const card    = CARD_DATA[cardId] ?? { name: cardId, color: 'bg-stone-800 border-stone-600' }
+  const tip     = CARD_TOOLTIPS[cardId]
+  const isSab   = cardId?.startsWith('SAB_')
+  const isCurse = cardId?.startsWith('CURSE_')
+  const isEnc   = cardId?.startsWith('ENC_')
+  const isCrew  = cardId?.startsWith('CREW_')
+
+  const categoryLabel = isSab ? '⚠ Saboteur Card' : isCurse ? '☠ Curse Card' : isEnc ? '⚡ Encounter' : isCrew ? '🛡 Crew Card' : ''
+  const categoryColor = isSab ? 'text-red-400' : isCurse ? 'text-purple-400' : isEnc ? 'text-amber-400' : 'text-green-400'
+
+  return (
+    <div className="fixed z-[9999] bottom-36 left-1/2 -translate-x-1/2 w-48 bg-stone-950 border border-stone-600 rounded-lg p-3 shadow-lg pointer-events-none">
+      <p className="text-xs font-semibold text-stone-100 mb-1">{card.name}</p>
+      {categoryLabel && <p className={`text-xs mb-2 ${categoryColor}`}>{categoryLabel}</p>}
+      {tip?.effect  && <p className="text-xs text-stone-300 mb-2 leading-relaxed">{tip.effect}</p>}
+      {tip?.flavour && <p className="text-xs text-stone-500 italic leading-relaxed border-t border-stone-700 pt-2">"{tip.flavour}"</p>}
+
+    </div>
+  )
+}
+
 function CardComponent({ cardId, selected, onClick, disabled }) {
   const card    = CARD_DATA[cardId] ?? { name: cardId, color: 'bg-stone-800 border-stone-600' }
   const isSab   = cardId?.startsWith('SAB_')
   const isCurse = cardId?.startsWith('CURSE_')
+  const [showTip, setShowTip] = useState(false)
 
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`
-        relative border-2 rounded-lg p-3 text-left transition-all duration-150 w-28 min-h-20
-        ${card.color}
-        ${selected ? 'ring-2 ring-amber-400 scale-105' : ''}
-        ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'}
-      `}
-    >
-      <p className="text-xs font-semibold text-stone-100 leading-tight">{card.name}</p>
-      {isSab   && <p className="text-xs text-red-400 mt-1">⚠ Wretch</p>}
-      {isCurse && <p className="text-xs text-purple-400 mt-1">☠ Curse</p>}
-    </button>
+    <div className="relative" onMouseEnter={() => setShowTip(true)} onMouseLeave={() => setShowTip(false)}>
+      {showTip && <CardTooltip cardId={cardId} />}
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        className={`
+          relative border-2 rounded-lg p-2 text-left transition-all duration-150 w-20 min-h-16
+          ${card.color}
+          ${selected ? 'ring-2 ring-amber-400 scale-105' : ''}
+          ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'}
+        `}
+      >
+        <p className="text-xs font-semibold text-stone-100 leading-none">{card.name}</p>
+        {isSab   && <p className="text-xs text-red-400 mt-0.5">⚠ Wretch</p>}
+        {isCurse && <p className="text-xs text-purple-400 mt-0.5">☠ Curse</p>}
+      </button>
+    </div>
   )
 }
 
@@ -291,17 +357,17 @@ export default function Game() {
           </div>
 
           {/* Phase content — scrollable */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+          <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
 
             {/* Dawn Event */}
             {phase === 'dawnEvent' && currentEvent && (
-              <div className="bg-amber-950 border border-amber-700 rounded-lg p-4 space-y-2">
+              <div className="bg-amber-950 border border-amber-700 rounded-lg p-3 space-y-1">
                 <p className="text-xs text-amber-500 uppercase tracking-wider">Dawn Event</p>
-                <p className="text-amber-300 font-semibold text-lg">{currentEvent.name}</p>
-                <p className="text-amber-200 text-sm">{currentEvent.desc}</p>
+                <p className="text-amber-300 font-semibold">{currentEvent.name}</p>
+                <p className="text-amber-200 text-xs">{currentEvent.desc}</p>
                 {isHost
-                  ? <Button onClick={handleAdvance} className="mt-2 bg-amber-700 hover:bg-amber-600 text-stone-100">Continue →</Button>
-                  : <p className="text-xs text-amber-600 mt-2">Waiting for host to continue...</p>
+                  ? <Button onClick={handleAdvance} className="mt-1 bg-amber-700 hover:bg-amber-600 text-stone-100 text-sm py-1">Continue →</Button>
+                  : <p className="text-xs text-amber-600 mt-1">Waiting for host to continue...</p>
                 }
               </div>
             )}
@@ -346,95 +412,146 @@ export default function Game() {
               </div>
             )}
 
-            {/* Draw Phase + Resolution — cards revealed with effects */}
-            {(phase === 'draw' || phase === 'resolution' || phase === 'discussion') && todayDrawnCards.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs text-stone-500 uppercase tracking-wider">Cards Drawn Today</p>
-                  {currentEvent && (
-                    <span className="text-xs text-amber-600 italic">{currentEvent.name} active</span>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {[...todayDrawnCards]
-                    .sort((a, b) => a.position - b.position)
-                    .map(ci => {
-                      const cardDef  = CARD_DATA[ci.cardId]
-                      const cardName = cardDef?.name ?? ci.cardId
-                      const isSab    = ci.cardId?.startsWith('SAB_')
-                      const isCurse  = ci.cardId?.startsWith('CURSE_')
-                      const isEnc    = ci.cardId?.startsWith('ENC_')
-
-                      // Find matching log entries for this card's resolution
-                      const cardLog = log.filter(e =>
-                        e.message.startsWith(`[${cardName}]`) ||
-                        e.message.includes(`[${cardName}]`)
-                      ).slice(-1)[0]
-
-                      // Extract effect summary from log message
-                      const effectText = cardLog
-                        ? cardLog.message.replace(`[${cardName}]`, '').trim()
-                        : null
-
-                      return (
-                        <div
-                          key={ci.instanceId}
-                          className={`relative border-2 rounded-lg p-3 flex flex-col gap-1
-                            ${cardDef?.color ?? 'bg-stone-800 border-stone-600'}
-                            w-36`}
-                        >
-                          {/* Position badge */}
-                          <span className="absolute top-1 right-1 text-xs text-stone-400 font-mono">
-                            #{ci.position + 1}
-                          </span>
-
-                          {/* Card name */}
-                          <p className="text-xs font-semibold text-stone-100 pr-5 leading-tight">
-                            {cardName}
-                          </p>
-
-                          {/* Card type label */}
-                          {isSab   && <span className="text-xs text-red-400">⚠ Saboteur</span>}
-                          {isCurse && <span className="text-xs text-purple-400">☠ Curse</span>}
-                          {isEnc   && <span className="text-xs text-amber-400">⚡ Encounter</span>}
-
-                          {/* Effect summary from log */}
-                          {effectText && (
-                            <p className="text-xs text-stone-300 leading-tight mt-1 border-t border-stone-600 pt-1">
-                              {effectText}
-                            </p>
-                          )}
-                        </div>
-                      )
-                    })
-                  }
-                </div>
-
-                {/* Dawn Event modifier note */}
-                {currentEvent && phase !== 'contribution' && (
+            {/* Draw Phase — cards shown, host advances to resolution */}
+            {phase === 'draw' && (
+              <div className="space-y-4">
+                {currentEvent && currentEvent.name !== 'Calm Morning' && (
                   <div className="bg-amber-950 border border-amber-800 rounded-lg px-3 py-2">
                     <p className="text-xs text-amber-400">
-                      <span className="font-semibold">{currentEvent.name}:</span>{' '}
-                      {currentEvent.desc}
+                      <span className="font-semibold">{currentEvent.name}</span>
+                      {' — '}{currentEvent.desc}
                     </p>
                   </div>
                 )}
+                {todayDrawnCards.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-stone-500 uppercase tracking-wider">Cards Drawn</p>
+                    <div className="flex flex-wrap gap-3">
+                      {[...todayDrawnCards]
+                        .sort((a, b) => a.position - b.position)
+                        .map(ci => {
+                          const cardDef  = CARD_DATA[ci.cardId]
+                          const cardName = cardDef?.name ?? ci.cardId
+                          const isSab    = ci.cardId?.startsWith('SAB_')
+                          const isCurse  = ci.cardId?.startsWith('CURSE_')
+                          const isEnc    = ci.cardId?.startsWith('ENC_')
+                          const [showDrawTip, setShowDrawTip] = useState(false)
+                          return (
+                            <div
+                              key={ci.instanceId}
+                              className="relative"
+                              onMouseEnter={() => setShowDrawTip(true)}
+                              onMouseLeave={() => setShowDrawTip(false)}
+                            >
+                              {showDrawTip && <CardTooltip cardId={ci.cardId} />}
+                              <div
+                                className={`relative border-2 rounded-lg p-3 flex flex-col gap-1 w-36
+                                  ${cardDef?.color ?? 'bg-stone-800 border-stone-600'}`}
+                              >
+                                <span className="absolute top-1 right-1 text-xs text-stone-400 font-mono">
+                                  #{ci.position + 1}
+                                </span>
+                                <p className="text-xs font-semibold text-stone-100 pr-5 leading-tight">
+                                  {cardName}
+                                </p>
+                                {isSab   && <span className="text-xs text-red-400">⚠ Saboteur</span>}
+                                {isCurse && <span className="text-xs text-purple-400">☠ Curse</span>}
+                                {isEnc   && <span className="text-xs text-amber-400">⚡ Encounter</span>}
+                              </div>
+                            </div>
+                          )
+                        })
+                      }
+                    </div>
+                  </div>
+                )}
+                {isHost
+                  ? <Button onClick={handleAdvance} className="bg-amber-700 hover:bg-amber-600 text-stone-100">
+                      Resolve Cards →
+                    </Button>
+                  : <p className="text-xs text-amber-600">Waiting for host to resolve cards...</p>
+                }
               </div>
             )}
 
-            {/* Discussion */}
+            {/* Discussion — cards with effects shown, then discussion panel */}
             {phase === 'discussion' && (
-              <div className="bg-stone-800 border border-stone-600 rounded-lg p-4 space-y-2">
-                <p className="text-stone-300 font-medium">Campfire Discussion</p>
-                <p className="text-stone-500 text-sm">Discuss what happened. Accuse. Defend. The vote begins soon.</p>
-                {isHost && (
-                  <Button
-                    onClick={handleBeginVote}
-                    className="bg-red-800 hover:bg-red-700 text-stone-100 text-sm"
-                  >
-                    Begin Vote Now
-                  </Button>
+              <div className="space-y-4">
+                {currentEvent && currentEvent.name !== 'Calm Morning' && (
+                  <div className="bg-amber-950 border border-amber-800 rounded-lg px-3 py-2">
+                    <p className="text-xs text-amber-400">
+                      <span className="font-semibold">{currentEvent.name}</span>
+                      {' — '}{currentEvent.desc}
+                    </p>
+                  </div>
                 )}
+                {todayDrawnCards.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-stone-500 uppercase tracking-wider">Cards Resolved Today</p>
+                    <div className="flex flex-wrap gap-3">
+                      {[...todayDrawnCards]
+                        .sort((a, b) => a.position - b.position)
+                        .map(ci => {
+                          const cardDef  = CARD_DATA[ci.cardId]
+                          const cardName = cardDef?.name ?? ci.cardId
+                          const isSab    = ci.cardId?.startsWith('SAB_')
+                          const isCurse  = ci.cardId?.startsWith('CURSE_')
+                          const isEnc    = ci.cardId?.startsWith('ENC_')
+                          const cardLog  = [...log].reverse().find(e =>
+                            e.message.includes(`[${cardName}]`)
+                          )
+                          const effectText = cardLog
+                            ? cardLog.message.replace(`[${cardName}]`, '').trim()
+                            : null
+                          const [showDiscTip, setShowDiscTip] = useState(false)
+                          return (
+                            <div
+                              key={ci.instanceId}
+                              className="relative"
+                              onMouseEnter={() => setShowDiscTip(true)}
+                              onMouseLeave={() => setShowDiscTip(false)}
+                            >
+                              {showDiscTip && <CardTooltip cardId={ci.cardId} />}
+                              <div
+                                className={`relative border-2 rounded-lg p-3 flex flex-col gap-1 w-36
+                                  ${cardDef?.color ?? 'bg-stone-800 border-stone-600'}`}
+                              >
+                                <span className="absolute top-1 right-1 text-xs text-stone-400 font-mono">
+                                  #{ci.position + 1}
+                                </span>
+                                <p className="text-xs font-semibold text-stone-100 pr-5 leading-tight">
+                                  {cardName}
+                                </p>
+                                {isSab   && <span className="text-xs text-red-400">⚠ Saboteur</span>}
+                                {isCurse && <span className="text-xs text-purple-400">☠ Curse</span>}
+                                {isEnc   && <span className="text-xs text-amber-400">⚡ Encounter</span>}
+                                {effectText && (
+                                  <p className="text-xs text-stone-300 leading-tight mt-1 border-t border-stone-600 pt-1">
+                                    {effectText}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })
+                      }
+                    </div>
+                  </div>
+                )}
+                <div className="bg-stone-800 border border-stone-600 rounded-lg p-4 space-y-2">
+                  <p className="text-stone-300 font-medium">🔥 Campfire Discussion</p>
+                  <p className="text-stone-500 text-sm">
+                    Discuss what happened. Accuse. Defend. The vote begins soon.
+                  </p>
+                  {isHost && (
+                    <Button
+                      onClick={handleBeginVote}
+                      className="bg-red-800 hover:bg-red-700 text-stone-100 text-sm"
+                    >
+                      Begin Vote Now
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
 
@@ -479,7 +596,7 @@ export default function Game() {
 
             {/* Role indicator */}
             {self?.role && (
-              <div className={`border rounded-lg p-3 text-sm ${self.role === 'saboteur' ? 'bg-red-950 border-red-800 text-red-300' : 'bg-green-950 border-green-800 text-green-300'}`}>
+              <div className={`border rounded-lg px-3 py-2 text-xs ${self.role === 'saboteur' ? 'bg-red-950 border-red-800 text-red-300' : 'bg-green-950 border-green-800 text-green-300'}`}>
                 You are: <strong>{self.role === 'saboteur' ? '💀 Wretch (Saboteur)' : '🛡 Crew Member'}</strong>
               </div>
             )}
@@ -492,11 +609,11 @@ export default function Game() {
             </div>
           </div>
 
-          {/* Hand — pinned to bottom */}
+          {/* Hand — pinned to bottom, max 2 rows with scroll if overflow */}
           {self?.hand?.length > 0 && (
-            <div className="bg-stone-900 border-t border-stone-700 p-3 flex-shrink-0">
-              <p className="text-xs text-stone-500 uppercase tracking-wider mb-2">Your Hand</p>
-              <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="bg-stone-900 border-t border-stone-700 px-3 pt-2 pb-1 flex-shrink-0 max-h-40 overflow-y-auto">
+              <p className="text-xs text-stone-500 uppercase tracking-wider mb-1">Your Hand</p>
+              <div className="flex flex-wrap gap-1">
                 {self.hand.map((cardId, i) => (
                   <CardComponent
                     key={`${cardId}-${i}`}

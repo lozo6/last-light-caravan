@@ -312,9 +312,10 @@ function enterDraw(state) {
     drawCount = Math.max(1, drawCount + event.effect.draw_count_modifier);
   }
 
-  // If deck is empty or too thin, reshuffle the reshuffle pile back in
-  if (state.caravanDeck.length < drawCount && state.reshufflePile.length > 0) {
-    addLog(state, `The deck runs thin — discarded cards return to the pile.`);
+  // Only reshuffle when deck is completely empty — never mid-day
+  // This prevents same-day discards from being immediately drawn
+  if (state.caravanDeck.length === 0 && state.reshufflePile.length > 0) {
+    addLog(state, `The Caravan Deck is empty — discarded cards return to the pile.`);
     state.caravanDeck.push(...state.reshufflePile);
     state.reshufflePile = [];
   }
@@ -330,7 +331,7 @@ function enterDraw(state) {
   }
 
   addLog(state, `Draw Phase — ${actualDraw} card(s) drawn from the Caravan Deck.`);
-  enterResolution(state);
+  // Resolution is triggered manually by host via advance_resolution socket event
 }
 
 function enterResolution(state) {
@@ -714,6 +715,7 @@ module.exports = {
   createGameState,
   startGame,
   enterContribution,
+  enterResolution,
   submitContribution,
   enterVote,
   castVote,

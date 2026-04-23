@@ -8,6 +8,7 @@ const {
   createGameState,
   startGame,
   enterContribution,
+  enterResolution,
   submitContribution,
   enterVote,
   castVote,
@@ -199,6 +200,10 @@ io.on('connection', (socket) => {
     if (state.phase === Phase.DAWN_EVENT) {
       enterContribution(state);
       broadcastState(info.roomId);
+    } else if (state.phase === Phase.DRAW) {
+      enterResolution(state);
+      broadcastState(info.roomId);
+      if (state.phase === Phase.DISCUSSION) startDiscussionTimer(info.roomId);
     }
   });
 
