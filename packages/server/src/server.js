@@ -3,7 +3,6 @@
 const express    = require('express');
 const http       = require('http');
 const { Server } = require('socket.io');
-const path       = require('path');
 
 const {
   createGameState,
@@ -32,14 +31,9 @@ const io     = new Server(server, {
   cors: { origin: '*', methods: ['GET', 'POST'] }
 });
 
-app.use(express.static(path.join(__dirname, '../../../packages/client/dist')));
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../../packages/client/dist/index.html'));
-});
-
-const rooms    = new Map();
+const rooms     = new Map();
 const socketMap = new Map();
-const timers   = new Map();
+const timers    = new Map();
 
 function generateRoomId() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -52,8 +46,8 @@ function broadcastState(roomId) {
   const state = rooms.get(roomId);
   if (!state) return;
 
-  const isGameOver = state.phase === Phase.GAME_OVER;
-  const publicView = isGameOver ? buildGameOverView(state) : buildPublicGameView(state);
+  const isGameOver  = state.phase === Phase.GAME_OVER;
+  const publicView  = isGameOver ? buildGameOverView(state) : buildPublicGameView(state);
 
   state.players.forEach(player => {
     if (!player.connected) return;
@@ -128,20 +122,20 @@ io.on('connection', (socket) => {
   socket.on('join_room', ({ roomId, name }, callback) => {
     if (!roomId || !name?.trim()) return sendError(socket, 'Room ID and name are required');
     const state = rooms.get(roomId.toUpperCase());
-    if (!state) return sendError(socket, 'Room not found');
-    if (state.phase !== Phase.LOBBY) return sendError(socket, 'Game already in progress');
-    if (state.players.length >= state.settings.maxPlayers) return sendError(socket, 'Room is full');
+    if (!state)                                           return sendError(socket, 'Room not found');
+    if (state.phase !== Phase.LOBBY)                      return sendError(socket, 'Game already in progress');
+    if (state.players.length >= state.settings.maxPlayers) return sendError(socket, 'Room is full — maximum players reached');
 
     const player = {
-      id: socket.id,
-      name: name.trim(),
-      role: null,
-      alive: true,
-      isHost: false,
-      hand: [],
-      connected: true,
+      id:               socket.id,
+      name:             name.trim(),
+      role:             null,
+      alive:            true,
+      isHost:           false,
+      hand:             [],
+      connected:        true,
       votedForPlayerId: null,
-      reconnectToken: uuidv4(),
+      reconnectToken:   uuidv4(),
     };
 
     state.players.push(player);
@@ -172,7 +166,7 @@ io.on('connection', (socket) => {
     const state = rooms.get(info.roomId);
     if (!state) return;
     if (state.lobby.hostId !== socket.id) return sendError(socket, 'Only host can change settings');
-    if (state.phase !== Phase.LOBBY) return sendError(socket, 'Game already started');
+    if (state.phase !== Phase.LOBBY)      return sendError(socket, 'Game already started');
 
     const allowed = ['numDays', 'cardsPerDayDraw', 'maxPlayers', 'revealExiledRole',
                      'discussionTimerSeconds', 'voteTimerSeconds'];
@@ -201,19 +195,20 @@ io.on('connection', (socket) => {
     if (!info) return;
     const state = rooms.get(info.roomId);
     if (!state) return;
+    if (state.lobby.hostId !== socket.id) return;
     if (state.phase === Phase.DAWN_EVENT) {
       enterContribution(state);
       broadcastState(info.roomId);
     }
   });
 
-  socket.on('submit_contribution', ({ cardId }) => {
+  socket.on('submit_contribution', ({ cardId, action }) => {
     const info = socketMap.get(socket.id);
     if (!info) return sendError(socket, 'Not in a room');
     const state = rooms.get(info.roomId);
     if (!state) return;
     try {
-      submitContribution(state, info.playerId, cardId ?? null);
+      submitContribution(state, info.playerId, cardId ?? null, action ?? 'contribute');
       broadcastState(info.roomId);
       if (state.phase === Phase.DISCUSSION) startDiscussionTimer(info.roomId);
     } catch (e) {
@@ -226,8 +221,8 @@ io.on('connection', (socket) => {
     if (!info) return;
     const state = rooms.get(info.roomId);
     if (!state) return;
-    if (state.phase !== Phase.DISCUSSION) return sendError(socket, 'Not in discussion phase');
-    if (state.lobby.hostId !== socket.id) return sendError(socket, 'Only host can begin vote early');
+    if (state.phase !== Phase.DISCUSSION)    return sendError(socket, 'Not in discussion phase');
+    if (state.lobby.hostId !== socket.id)    return sendError(socket, 'Only host can begin vote early');
     clearRoomTimer(info.roomId);
     enterVote(state);
     broadcastState(info.roomId);
@@ -262,10 +257,10 @@ io.on('connection', (socket) => {
     const player = state.players.find(p => p.id === info.playerId);
     if (!player?.alive) return;
     const msg = {
-      id: uuidv4(),
-      playerId: player.id,
-      name: player.name,
-      text: String(text).slice(0, 300),
+      id:        uuidv4(),
+      playerId:  player.id,
+      name:      player.name,
+      text:      String(text).slice(0, 300),
       timestamp: Date.now(),
     };
     io.to(info.roomId).emit('chat_message', msg);
@@ -277,9 +272,9 @@ io.on('connection', (socket) => {
     const player = state.players.find(p => p.reconnectToken === reconnectToken);
     if (!player) return sendError(socket, 'Invalid reconnect token');
 
-    const oldId = player.id;
+    const oldId     = player.id;
     socketMap.delete(oldId);
-    player.id = socket.id;
+    player.id        = socket.id;
     player.connected = true;
     socketMap.set(socket.id, { roomId, playerId: socket.id });
 
@@ -305,8 +300,28 @@ io.on('connection', (socket) => {
       const player = state.players.find(p => p.id === info.playerId);
       if (player) {
         player.connected = false;
+
+        // If host disconnects during an active game, end it
+        if (player.isHost && state.phase !== Phase.LOBBY && state.phase !== Phase.GAME_OVER) {
+          state.winner         = null;
+          state.gameOverReason = 'host_left';
+          state.phase          = Phase.GAME_OVER;
+          state.log.push({
+            id:        uuidv4(),
+            day:       state.day,
+            phase:     state.phase,
+            message:   `${player.name} (host) has left. The game has ended.`,
+            timestamp: Date.now(),
+          });
+          broadcastState(info.roomId);
+          clearRoomTimer(info.roomId);
+          socketMap.delete(socket.id);
+          return;
+        }
+
         io.to(info.roomId).emit('player_left', { name: player.name, id: player.id });
         broadcastState(info.roomId);
+
         if (state.phase === Phase.LOBBY) {
           const anyConnected = state.players.some(p => p.connected);
           if (!anyConnected) {
