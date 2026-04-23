@@ -25,10 +25,10 @@ const DEFAULT_SETTINGS = {
   maxPlayers: 10,
   numSaboteurs: null,
   numDays: 7,
-  cardsPerDayDraw: 4,
+  cardsPerDayDraw: 3,
   initialHandSize: 5,
-  drawPerDay: 2,
-  maxHandSize: 7,
+  drawPerDay: 1,
+  maxHandSize: 5,
   discussionTimerSeconds: 120,
   voteTimerSeconds: 60,
   revealExiledRole: true,
@@ -38,7 +38,7 @@ const STARTING_RESOURCES = {
   food: 6,
   water: 6,
   morale: 5,
-  integrity: 4,
+  integrity: 3,
 };
 
 const RESOURCE_MIN = 0;
