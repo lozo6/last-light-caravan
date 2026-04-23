@@ -77,32 +77,25 @@ function dealCards(cardIdPool, count) {
   return result;
 }
 
-// Weighted draw — 20% curse chance for all, 30% saboteur chance for Wretches
-// Uses shuffled pools to avoid duplicate cards in the same hand
+// Weighted draw — Crew draws only Crew cards, Wretches draw Crew (60%) + Saboteur (40%)
+// Curse cards are world events — auto-injected into deck, never dealt to players
 function dealCardsWeighted(role, count) {
-  const crewPool   = shuffle([...CREW_CARD_IDS]);
-  const cursePool  = shuffle([...CURSE_CARD_IDS]);
-  const sabPool    = shuffle([...SAB_CARD_IDS]);
-  let crewIdx = 0, curseIdx = 0, sabIdx = 0;
+  const crewPool = shuffle([...CREW_CARD_IDS]);
+  const sabPool  = shuffle([...SAB_CARD_IDS]);
+  let crewIdx = 0, sabIdx = 0;
 
   const result = [];
   for (let i = 0; i < count; i++) {
     const roll = Math.random();
     let cardId;
     if (role === Team.SABOTEUR) {
-      if (roll < 0.30) {
+      if (roll < 0.40) {  // 40% saboteur rate — bumped from 30%
         cardId = sabPool[sabIdx % sabPool.length]; sabIdx++;
-      } else if (roll < 0.50) {
-        cardId = cursePool[curseIdx % cursePool.length]; curseIdx++;
       } else {
         cardId = crewPool[crewIdx % crewPool.length]; crewIdx++;
       }
     } else {
-      if (roll < 0.20) {
-        cardId = cursePool[curseIdx % cursePool.length]; curseIdx++;
-      } else {
-        cardId = crewPool[crewIdx % crewPool.length]; crewIdx++;
-      }
+      cardId = crewPool[crewIdx % crewPool.length]; crewIdx++;
     }
     result.push(cardId);
   }
@@ -155,30 +148,18 @@ function startGame(state) {
 
   state.players.forEach(p => {
     if (p.role === Team.SABOTEUR) {
-      // Guarantee 1 saboteur card, rest weighted without replacement
-      const sabPool   = shuffle([...SAB_CARD_IDS]);
-      const crewPool  = shuffle([...CREW_CARD_IDS]);
-      const cursePool = shuffle([...CURSE_CARD_IDS]);
-      let crewIdx = 0, curseIdx = 0;
-      const hand = [sabPool[0]]; // guaranteed 1 sab card
+      // Guarantee 1 saboteur card, rest Crew — no curse cards in hands
+      const sabPool  = shuffle([...SAB_CARD_IDS]);
+      const crewPool = shuffle([...CREW_CARD_IDS]);
+      const hand = [sabPool[0]];
       for (let i = 0; i < settings.initialHandSize - 1; i++) {
-        const roll = Math.random();
-        if (roll < 0.20) { hand.push(cursePool[curseIdx % cursePool.length]); curseIdx++; }
-        else             { hand.push(crewPool[crewIdx % crewPool.length]);  crewIdx++;  }
+        hand.push(crewPool[i % crewPool.length]);
       }
       p.hand = shuffle(hand);
     } else {
-      // Crew: 80% crew, 20% curse — without replacement
-      const crewPool  = shuffle([...CREW_CARD_IDS]);
-      const cursePool = shuffle([...CURSE_CARD_IDS]);
-      let crewIdx = 0, curseIdx = 0;
-      const hand = [];
-      for (let i = 0; i < settings.initialHandSize; i++) {
-        const roll = Math.random();
-        if (roll < 0.20) { hand.push(cursePool[curseIdx % cursePool.length]); curseIdx++; }
-        else             { hand.push(crewPool[crewIdx % crewPool.length]);  crewIdx++;  }
-      }
-      p.hand = hand;
+      // Crew: all Crew cards — curse cards are world events, not player cards
+      const crewPool = shuffle([...CREW_CARD_IDS]);
+      p.hand = crewPool.slice(0, settings.initialHandSize);
     }
   });
 
@@ -279,20 +260,19 @@ function submitContribution(state, playerId, cardId, action = ContributionAction
     if (!player.hand.includes(cardId)) throw new Error('Card not in hand');
     player.hand = removeOneFromHand(player.hand, cardId, cardIndex);
     const def = CARD_MAP.get(cardId);
-    if (def?.type === CardType.SABOTEUR) {
-      // Permanent removal — goes to discard pile, never returns
-      state.discardPile.push(makeCardInstance(cardId, playerId, 'discarded'));
-    } else {
-      // Crew or curse card — goes to reshuffle pile, returns when deck empties
-      state.reshufflePile.push(makeCardInstance(cardId, playerId, 'discarded'));
-    }
+    // All discards go to reshuffle pile — nothing is permanently destroyed
+    state.reshufflePile.push(makeCardInstance(cardId, playerId, 'discarded'));
     contrib.action = ContributionAction.DISCARD;
-    addLog(state, `${player.name} discarded a card.`);
+    if (def?.type === CardType.SABOTEUR) {
+      // Saboteur discard is revealed publicly — everyone sees what was dumped
+      addLog(state, `${player.name} discarded a Saboteur card: ${def.name}.`);
+    } else {
+      addLog(state, `${player.name} discarded a card.`);
+    }
 
   } else {
-    // Hold — contribute nothing, hand unchanged
-    contrib.action = ContributionAction.HOLD;
-    addLog(state, `${player.name} held.`);
+    // No valid action — must contribute or discard
+    throw new Error('Must contribute or discard a card — holding is not allowed');
   }
 
   contrib.locked = true;
@@ -306,18 +286,27 @@ function submitContribution(state, playerId, cardId, action = ContributionAction
 function enterDraw(state) {
   state.phase = Phase.DRAW;
 
-  let drawCount = state.settings.cardsPerDayDraw;
+  // Auto-inject curse cards based on day — the desert gets harder each day
+  const CURSES_PER_DAY = [0, 1, 1, 2, 2, 3, 3]; // day1=0, day2=1, day3=1, day4=2, day5=2, day6=3, day7=3
+  const curseCount = CURSES_PER_DAY[state.day - 1] ?? 1;
+  if (curseCount > 0) {
+    const cursePool = shuffle([...CURSE_CARD_IDS]);
+    for (let i = 0; i < curseCount; i++) {
+      const curseId = cursePool[i % cursePool.length];
+      state.caravanDeck.push(makeCardInstance(curseId, null, 'world'));
+    }
+    addLog(state, `The desert stirs — ${curseCount} curse card${curseCount > 1 ? 's' : ''} enter the deck.`);
+  }
+
+  // Scaled draw count: floor((players + curses) / 2), min 3
+  // Keeps surface probability ~50% regardless of player count
+  const livingCount = getLivingPlayers(state).length;
+  let drawCount = Math.max(3, Math.floor((livingCount + curseCount) / 2));
+
+  // Dawn event draw modifier still applies on top of scaled count
   const event = CARD_MAP.get(state.currentEventId);
   if (event?.effect?.draw_count_modifier) {
     drawCount = Math.max(1, drawCount + event.effect.draw_count_modifier);
-  }
-
-  // Only reshuffle when deck is completely empty — never mid-day
-  // This prevents same-day discards from being immediately drawn
-  if (state.caravanDeck.length === 0 && state.reshufflePile.length > 0) {
-    addLog(state, `The Caravan Deck is empty — discarded cards return to the pile.`);
-    state.caravanDeck.push(...state.reshufflePile);
-    state.reshufflePile = [];
   }
 
   state.caravanDeck = shuffle(state.caravanDeck);
@@ -331,6 +320,14 @@ function enterDraw(state) {
   }
 
   addLog(state, `Draw Phase — ${actualDraw} card(s) drawn from the Caravan Deck.`);
+
+  // Clear remaining undrawn cards to reshuffle pile — deck resets each day
+  // Prevents carry-over accumulation at high player counts
+  if (state.caravanDeck.length > 0) {
+    state.reshufflePile.push(...state.caravanDeck);
+    state.caravanDeck = [];
+  }
+
   // Resolution is triggered manually by host via advance_resolution socket event
 }
 
