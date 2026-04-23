@@ -74,9 +74,9 @@ At the start of the game each player receives **5 cards**. Each new day you draw
 
 The only way cards leave your hand is by contributing one during the Contribution Phase. If you hold every day, your hand stays full and you stop drawing — which is suspicious, and your teammates will notice.
 
-**Crew members** draw mostly Crew cards, but the desert is unpredictable — curse cards can appear in anyone's hand at any time. About 1 in 5 draws may be a curse card.
+**Crew members** draw only Crew cards. Every card in your hand is helpful — there is no reason to discard unless you choose to hold a card for a better day.
 
-**Wretches** draw from the same pool as Crew but also have a chance of drawing Saboteur cards. On any given day a Wretch might hold a mix of Crew, Curse, and Saboteur cards — giving them far more options, and far more ways to be caught.
+**Wretches** draw mostly Crew cards but also have a ~30% chance of drawing a Saboteur card each day. Their hand looks mostly like a Crew member's — but they have dangerous cards mixed in. Discarding is a Wretch's safety valve to avoid contributing a Saboteur card without it being traced back.
 
 ---
 
@@ -109,32 +109,34 @@ The host clicks **Continue** to move the caravan into the Contribution Phase.
 
 ### Phase 2 — 🤫 Contribution Phase
 
-Every living player secretly chooses one of three actions:
+Every living player **must** take one of two actions — holding is not allowed:
 
 **Contribute** — Select one card from your hand and place it into the shared Caravan Deck. It is shuffled in with everyone else's contributions. No one sees what you played.
 
-**Discard** — Select one card from your hand and remove it from the Caravan Deck permanently or temporarily:
+**Discard** — Select one card from your hand and remove it without contributing it to the deck. All discarded cards go into a reshuffle pile. **If you discard a Saboteur card, the card name is revealed to everyone in the log.** There is nowhere to hide.
 
-- **Saboteur cards** are permanently destroyed — they never return to play. Discarding one as a Crew member is a heroic act.
-- **Crew and Curse cards** go into a reshuffle pile. When the Caravan Deck runs empty, this pile shuffles back in.
+> Every player must act. This keeps the deck full and meaningful every single day.
 
-**Hold** — Contribute nothing and discard nothing. Your hand stays exactly the same.
+A ✓ appears next to each player's name when they have locked in their choice. Once everyone has submitted, the Draw Phase begins automatically.
 
-> Contribution decisions are completely secret. No one sees which card you played or discarded. This is the heart of the deduction.
-
-A ✓ appears next to each player's name when they have locked in their choice. Once everyone has submitted, the Draw Phase begins automatically — no one can change their decision.
-
-**A note on non-contributes:** the game log records whether each player contributed, discarded, or held. All three are visible actions. Holding and discarding are logged separately — if you discarded, others know a card left your hand. If you held, they know nothing left your hand. Use both carefully.
+**What the log shows:** "Player X contributed a card." or "Player X discarded a card." or "Player X discarded a Saboteur card: [name]." — every action is visible, only the card itself is hidden (unless it's a Saboteur discard).
 
 ---
 
 ### Phase 3 — 🎴 Draw Phase
 
-The Caravan Deck is shuffled and **3 cards are drawn** (this number may be modified by the Dawn Event). All 3 cards are revealed to every player at once — you can see the card name and type before effects are applied.
+The Caravan Deck is shuffled and cards are drawn. The number drawn scales with player count and curse injection to keep roughly **50% of cards drawn** regardless of game size:
 
-The host then clicks **Resolve Cards →** to trigger resolution. This gives everyone a moment to see what was drawn and discuss before committing to the outcome.
+| Players | Typical cards drawn (mid-game) |
+| ------- | ------------------------------ |
+| 4       | 3                              |
+| 6       | 4                              |
+| 8       | 5                              |
+| 10      | 6                              |
 
-Cards are numbered #1, #2, #3 in the order they resolve — this matters for position-dependent events like Mirage Fields (second card triggers twice) and Clear Skies (first hazard cancelled).
+All drawn cards are revealed to every player at once — you can see the card name and type before effects are applied. **Any cards not drawn are cleared to the reshuffle pile** — the deck resets each day, preventing carry-over buildup at larger player counts.
+
+The host then clicks **Resolve Cards →** to trigger resolution. Cards are numbered #1, #2, #3... in the order they resolve — this matters for position-dependent events like Mirage Fields (second card triggers twice) and Clear Skies (first hazard cancelled).
 
 ### Phase 4 — ⚡ Resolution Phase
 
@@ -239,9 +241,18 @@ Encounters are world events — not played by any player. They enter the deck th
 
 ### ☠ Curse Cards
 
-Curse cards are not sabotage — they are the desert itself. Anyone can draw one. They represent the random cruelty of a hard journey: scorpion stings, cracked canteens, exhaustion. When a curse card resolves, no one is to blame. That ambiguity is exactly what makes them dangerous — and useful as cover.
+Curse cards are not sabotage — they are the desert itself. They are never dealt to players. Instead, the server automatically injects them directly into the Caravan Deck each day before the draw. No one plays them. No one chooses them. The world just gets harder.
 
-Curse cards appear in your hand marked with a **purple ☠ Curse** label so you know what you're holding. The effect is hidden until it resolves.
+The number of curses injected scales with the day — the desert grows more hostile the longer the journey continues:
+
+| Day | Curses injected                                     |
+| --- | --------------------------------------------------- |
+| 1   | 0 — Calm Morning, the desert gives you one free day |
+| 2–3 | 1 curse                                             |
+| 4–5 | 2 curses                                            |
+| 6–7 | 3 curses                                            |
+
+When a curse enters the deck, the log shows: _"The desert stirs — X curse card(s) enter the deck."_ Players know curses are coming but not which ones or when they'll surface.
 
 | Card               | Effect                                       |
 | ------------------ | -------------------------------------------- |
@@ -258,10 +269,9 @@ Curse cards appear in your hand marked with a **purple ☠ Curse** label so you 
 
 **For the Crew:**
 
-- Pay attention to which resources dropped and by how much. Crew cards give moderate gains; Saboteur cards cause sharper drops. Curse cards cause moderate damage — similar to Crew cards — which is what makes them useful as Wretch cover.
-- Holding and discarding are both logged. If someone discarded on the same day a bad card appeared, ask what they got rid of — and why. "I had a curse card" is a claim anyone can make. Decide whether to believe it.
-- Persistent debuffs that last multiple days are a stronger signal — Sand Sickness and Water Leak are Saboteur cards, not curses. Curse debuffs are shorter.
-- If you draw a Saboteur card, discard it immediately — it permanently removes that threat from the game. Announce it at the campfire to build trust.
+- Your hand contains only Crew cards — every card you hold is helpful. You must contribute or discard every day. Always contribute. If a Crew member discards, that is a strong signal they are a Wretch getting rid of a Saboteur card.
+- Curse cards are injected by the world — when bad things happen, ask whether it was a curse (expected, unattributable) or a Saboteur card (someone contributed it). The log tells you how many curses entered the deck that day.
+- Persistent debuffs lasting multiple days are a stronger signal — Sand Sickness and Water Leak are Saboteur cards. Curse debuffs tend to be shorter one-off hits.
 - Wagon Integrity starts at 3. It doesn't take many hits before you lose — prioritise Repair Kit when you have it.
 - Don't exile on Day 1 without strong evidence. A wrong exile removes a Crew member and leaves the Wretches stronger.
 - Use Scout's Insight and Clear Map strategically — knowing tomorrow's Dawn Event early is a huge advantage.
@@ -269,13 +279,13 @@ Curse cards appear in your hand marked with a **purple ☠ Curse** label so you 
 **For the Wretches:**
 
 - Blend in early. Contribute Crew cards in the first couple of days to build trust before striking.
-- **Use Dawn Events as multipliers.** On Thieves Nearby, contributing a Water Cache turns its gain into a loss — you played a helpful card, the event did the damage. On Scorch Day, Spoiled Rations doubles its food loss. On Mirage Fields, a Saboteur card in position #2 triggers twice. Day 1 is always Calm Morning — no modifiers, so it's the safest day to contribute a Saboteur card if you want to seed the deck early.
+- **Use Dawn Events as multipliers.** On Thieves Nearby, contributing a Water Cache turns its gain into a loss — you played a helpful card, the event did the damage. On Scorch Day, Spoiled Rations doubles its food loss. On Mirage Fields, a Saboteur card in position #2 triggers twice. Day 1 is always Calm Morning — no modifiers, so it's the safest day to seed the deck early.
 - Broken Axle is especially dangerous early — Wagon Integrity starts at 3 and a weakened repair can leave it near collapse.
-- **Curse cards are your alibi.** Everyone draws them. When you discard a card and someone asks why — "curse card" is a plausible and unverifiable answer. Use this cover sparingly so it doesn't become a pattern.
-- If you draw a curse card yourself, consider contributing it instead of discarding — it harms the caravan and looks like bad luck, not sabotage.
+- **Every discard is suspicious.** Crew members only hold Crew cards and always contribute them. If you discard, the Crew will know you had a Saboteur card — and if it was a Saboteur card, its name is revealed in the log. Only discard when contributing is more dangerous than the exposure.
+- Discarding a Saboteur card reveals its name publicly in the log — everyone will know exactly what you dumped. Only discard when contributing it is more dangerous than the exposure.
 - Protect each other in votes without making it obvious. Vote against your Wretch partner only when they're clearly safe.
-- Discarding a Saboteur card permanently destroys it — only do this when the social cost of looking suspicious is higher than losing the weapon.
 - Sand Sickness and Water Leak are your most dangerous tools — persistent effects compound and are hard to undo.
+- **Curse cards are world events now** — you cannot use them as an alibi. The Crew knows exactly how many curses entered the deck each day and will subtract them from the damage total.
 
 ---
 
@@ -285,7 +295,7 @@ Curse cards appear in your hand marked with a **purple ☠ Curse** label so you 
 2. All other players join using that code — you need at least 4 to start
 3. Roles are assigned secretly when the host starts — check the role indicator on your screen
 4. The **host** clicks Continue at each Dawn Event, then Resolve Cards → during the Draw Phase
-5. During Contribution Phase, select a card and hit Contribute, Discard, or Hold — all three are logged
+5. During Contribution Phase, you **must** select a card and hit Contribute or Discard — holding is not allowed
 6. **Hover over any card** to see its effect description and flavour text — available in your hand and on resolved cards
 7. Use the **chat** during Campfire Discussion to talk, accuse, and defend
 8. Vote when the Vote Phase begins — you have 60 seconds
@@ -298,14 +308,14 @@ Curse cards appear in your hand marked with a **purple ☠ Curse** label so you 
 
 The host can adjust these settings before starting:
 
-| Setting             | Default | Description                                  |
-| ------------------- | ------- | -------------------------------------------- |
-| Number of Days      | 7       | Length of the journey                        |
-| Cards Drawn Per Day | 3       | How many cards are resolved each day         |
-| Discussion Timer    | 120s    | Length of the Campfire Discussion            |
-| Vote Timer          | 60s     | Length of the Vote Phase                     |
-| Reveal Exiled Roles | On      | Whether exiled players have their role shown |
-| Max Players         | 10      | Room capacity (minimum 4 to start)           |
+| Setting             | Default | Description                                                          |
+| ------------------- | ------- | -------------------------------------------------------------------- |
+| Number of Days      | 7       | Length of the journey                                                |
+| Cards Drawn Per Day | Scaled  | Roughly half the deck each day — scales with player count and curses |
+| Discussion Timer    | 120s    | Length of the Campfire Discussion                                    |
+| Vote Timer          | 60s     | Length of the Vote Phase                                             |
+| Reveal Exiled Roles | On      | Whether exiled players have their role shown                         |
+| Max Players         | 10      | Room capacity (minimum 4 to start)                                   |
 
 ---
 
@@ -323,15 +333,15 @@ The host can adjust these settings before starting:
 
 **Exile** — The result of a successful vote. The exiled player is removed from all future phases.
 
-**Discard** — Removing a card from your hand during the Contribution Phase. Saboteur cards are permanently destroyed. Crew and Curse cards go into a reshuffle pile and return when the Caravan Deck empties. Logged publicly — others know you discarded but not what.
+**Discard** — Removing a card from your hand during the Contribution Phase. Since Crew members only hold Crew cards, a discard is a strong signal the player is a Wretch. If a Saboteur card is discarded, the card name is revealed publicly in the log — everyone can see exactly what was dumped. All discarded cards (Crew and Saboteur) go into a reshuffle pile and return to the deck when it empties.
 
-**Hold** — Choosing not to contribute or discard during the Contribution Phase. Your hand stays the same. Logged publicly.
+**Hold** — No longer a valid action. Every player must Contribute or Discard each day. This ensures the deck is always full and every day produces meaningful card resolutions.
 
 **Persistent Effect** — A multi-day debuff applied by certain Saboteur or Curse cards. Triggers automatically at each Dawn Phase until it expires.
 
-**Reshuffle Pile** — Discarded Crew and Curse cards go here instead of being permanently removed. When the Caravan Deck runs empty, the reshuffle pile shuffles back in. Discarded Saboteur cards are permanently gone and never return.
+**Reshuffle Pile** — All discarded cards go here — Crew and Saboteur alike. When the Caravan Deck runs empty, the reshuffle pile shuffles back in. Nothing is permanently destroyed by discarding.
 
-**Curse Card** — A card representing the random hardships of the journey. Can appear in any player's hand. Shown with a purple ☠ label. Effect is hidden until it resolves. Crew and Curse discards cycle back into the deck when it empties; they are not permanently removed.
+**Curse Card** — A card representing the random hardships of the desert. Never dealt to players — injected directly into the Caravan Deck by the server each day. The number of curses increases as the days progress. When curse cards resolve, no player is responsible — it is simply the world.
 
 **Wretch** — The hidden saboteur role. Wretches look like Crew but carry Saboteur cards designed to destroy the caravan from within. They also draw Crew and Curse cards, giving them more options — and more ways to be read.
 

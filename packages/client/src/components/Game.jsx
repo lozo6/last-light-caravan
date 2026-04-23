@@ -156,9 +156,8 @@ function CardTooltip({ cardId }) {
 }
 
 function CardComponent({ cardId, selected, onClick, disabled }) {
-  const card    = CARD_DATA[cardId] ?? { name: cardId, color: 'bg-stone-800 border-stone-600' }
-  const isSab   = cardId?.startsWith('SAB_')
-  const isCurse = cardId?.startsWith('CURSE_')
+  const card  = CARD_DATA[cardId] ?? { name: cardId, color: 'bg-stone-800 border-stone-600' }
+  const isSab = cardId?.startsWith('SAB_')
   const [showTip, setShowTip] = useState(false)
 
   return (
@@ -175,9 +174,53 @@ function CardComponent({ cardId, selected, onClick, disabled }) {
         `}
       >
         <p className="text-xs font-semibold text-stone-100 leading-none">{card.name}</p>
-        {isSab   && <p className="text-xs text-red-400 mt-0.5">⚠ Wretch</p>}
-        {isCurse && <p className="text-xs text-purple-400 mt-0.5">☠ Curse</p>}
+        {isSab && <p className="text-xs text-red-400 mt-0.5">⚠ Wretch</p>}
       </button>
+    </div>
+  )
+}
+
+// Standalone component so useState for tooltip is valid (not inside .map())
+function DrawnCard({ ci, showEffect = false, log = [] }) {
+  const [showTip, setShowTip] = useState(false)
+  const cardDef  = CARD_DATA[ci.cardId]
+  const cardName = cardDef?.name ?? ci.cardId
+  const isSab    = ci.cardId?.startsWith('SAB_')
+  const isCurse  = ci.cardId?.startsWith('CURSE_')
+  const isEnc    = ci.cardId?.startsWith('ENC_')
+
+  const cardLog = showEffect
+    ? [...log].reverse().find(e => e.message.includes(`[${cardName}]`))
+    : null
+  const effectText = cardLog
+    ? cardLog.message.replace(`[${cardName}]`, '').trim()
+    : null
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setShowTip(true)}
+      onMouseLeave={() => setShowTip(false)}
+    >
+      {showTip && <CardTooltip cardId={ci.cardId} />}
+      <div className={`relative border-2 rounded-lg p-3 flex flex-col gap-1 w-36
+        ${cardDef?.color ?? 'bg-stone-800 border-stone-600'}`}
+      >
+        <span className="absolute top-1 right-1 text-xs text-stone-400 font-mono">
+          #{ci.position + 1}
+        </span>
+        <p className="text-xs font-semibold text-stone-100 pr-5 leading-tight">
+          {cardName}
+        </p>
+        {isSab   && <span className="text-xs text-red-400">⚠ Saboteur</span>}
+        {isCurse && <span className="text-xs text-purple-400">☠ Curse</span>}
+        {isEnc   && <span className="text-xs text-amber-400">⚡ Encounter</span>}
+        {effectText && (
+          <p className="text-xs text-stone-300 leading-tight mt-1 border-t border-stone-600 pt-1">
+            {effectText}
+          </p>
+        )}
+      </div>
     </div>
   )
 }
@@ -375,12 +418,12 @@ export default function Game() {
             {/* Contribution */}
             {phase === 'contribution' && (
               <div className="space-y-3">
-                <div className="bg-stone-800 border border-stone-600 rounded-lg p-4">
+                <div className="bg-stone-800 border border-stone-600 rounded-lg p-3">
                   <p className="text-stone-300 font-medium mb-1">Contribution Phase</p>
                   <p className="text-stone-500 text-sm">
                     {iLocked
                       ? 'Waiting for others...'
-                      : 'Contribute a card to the deck, discard one from your hand, or hold.'}
+                      : 'Select a card — Contribute it to the deck or Discard it from your hand.'}
                   </p>
                 </div>
                 {!iLocked && (
@@ -400,13 +443,6 @@ export default function Game() {
                     >
                       Discard
                     </Button>
-                    <Button
-                      onClick={handleHold}
-                      variant="outline"
-                      className="border-stone-600 text-stone-400 hover:bg-stone-800"
-                    >
-                      Hold
-                    </Button>
                   </div>
                 )}
               </div>
@@ -415,6 +451,11 @@ export default function Game() {
             {/* Draw Phase — cards shown, host advances to resolution */}
             {phase === 'draw' && (
               <div className="space-y-4">
+                {todayDrawnCards.length === 0 && (
+                  <div className="bg-stone-800 border border-stone-600 rounded-lg p-4">
+                    <p className="text-stone-400 text-sm">Drawing cards from the deck...</p>
+                  </div>
+                )}
                 {currentEvent && currentEvent.name !== 'Calm Morning' && (
                   <div className="bg-amber-950 border border-amber-800 rounded-lg px-3 py-2">
                     <p className="text-xs text-amber-400">
@@ -429,38 +470,7 @@ export default function Game() {
                     <div className="flex flex-wrap gap-3">
                       {[...todayDrawnCards]
                         .sort((a, b) => a.position - b.position)
-                        .map(ci => {
-                          const cardDef  = CARD_DATA[ci.cardId]
-                          const cardName = cardDef?.name ?? ci.cardId
-                          const isSab    = ci.cardId?.startsWith('SAB_')
-                          const isCurse  = ci.cardId?.startsWith('CURSE_')
-                          const isEnc    = ci.cardId?.startsWith('ENC_')
-                          const [showDrawTip, setShowDrawTip] = useState(false)
-                          return (
-                            <div
-                              key={ci.instanceId}
-                              className="relative"
-                              onMouseEnter={() => setShowDrawTip(true)}
-                              onMouseLeave={() => setShowDrawTip(false)}
-                            >
-                              {showDrawTip && <CardTooltip cardId={ci.cardId} />}
-                              <div
-                                className={`relative border-2 rounded-lg p-3 flex flex-col gap-1 w-36
-                                  ${cardDef?.color ?? 'bg-stone-800 border-stone-600'}`}
-                              >
-                                <span className="absolute top-1 right-1 text-xs text-stone-400 font-mono">
-                                  #{ci.position + 1}
-                                </span>
-                                <p className="text-xs font-semibold text-stone-100 pr-5 leading-tight">
-                                  {cardName}
-                                </p>
-                                {isSab   && <span className="text-xs text-red-400">⚠ Saboteur</span>}
-                                {isCurse && <span className="text-xs text-purple-400">☠ Curse</span>}
-                                {isEnc   && <span className="text-xs text-amber-400">⚡ Encounter</span>}
-                              </div>
-                            </div>
-                          )
-                        })
+                        .map(ci => <DrawnCard key={ci.instanceId} ci={ci} />)
                       }
                     </div>
                   </div>
@@ -491,49 +501,7 @@ export default function Game() {
                     <div className="flex flex-wrap gap-3">
                       {[...todayDrawnCards]
                         .sort((a, b) => a.position - b.position)
-                        .map(ci => {
-                          const cardDef  = CARD_DATA[ci.cardId]
-                          const cardName = cardDef?.name ?? ci.cardId
-                          const isSab    = ci.cardId?.startsWith('SAB_')
-                          const isCurse  = ci.cardId?.startsWith('CURSE_')
-                          const isEnc    = ci.cardId?.startsWith('ENC_')
-                          const cardLog  = [...log].reverse().find(e =>
-                            e.message.includes(`[${cardName}]`)
-                          )
-                          const effectText = cardLog
-                            ? cardLog.message.replace(`[${cardName}]`, '').trim()
-                            : null
-                          const [showDiscTip, setShowDiscTip] = useState(false)
-                          return (
-                            <div
-                              key={ci.instanceId}
-                              className="relative"
-                              onMouseEnter={() => setShowDiscTip(true)}
-                              onMouseLeave={() => setShowDiscTip(false)}
-                            >
-                              {showDiscTip && <CardTooltip cardId={ci.cardId} />}
-                              <div
-                                className={`relative border-2 rounded-lg p-3 flex flex-col gap-1 w-36
-                                  ${cardDef?.color ?? 'bg-stone-800 border-stone-600'}`}
-                              >
-                                <span className="absolute top-1 right-1 text-xs text-stone-400 font-mono">
-                                  #{ci.position + 1}
-                                </span>
-                                <p className="text-xs font-semibold text-stone-100 pr-5 leading-tight">
-                                  {cardName}
-                                </p>
-                                {isSab   && <span className="text-xs text-red-400">⚠ Saboteur</span>}
-                                {isCurse && <span className="text-xs text-purple-400">☠ Curse</span>}
-                                {isEnc   && <span className="text-xs text-amber-400">⚡ Encounter</span>}
-                                {effectText && (
-                                  <p className="text-xs text-stone-300 leading-tight mt-1 border-t border-stone-600 pt-1">
-                                    {effectText}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          )
-                        })
+                        .map(ci => <DrawnCard key={ci.instanceId} ci={ci} showEffect={true} log={log} />)
                       }
                     </div>
                   </div>
