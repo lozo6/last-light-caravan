@@ -107,17 +107,19 @@ The host clicks **Continue** to move the caravan into the Contribution Phase.
 
 ### Phase 2 — 🤫 Contribution Phase
 
-Every living player secretly chooses one of two actions:
+Every living player secretly chooses one of three actions:
 
 **Contribute** — Select one card from your hand and place it into the shared Caravan Deck. It is shuffled in with everyone else's contributions. No one sees what you played.
 
-**Hold** — Contribute nothing. Your hand stays the same.
+**Discard** — Select one card from your hand and remove it from the game entirely. It never enters the Caravan Deck. Your hand shrinks by one and you draw a card next dawn as normal.
 
-> Contribution decisions are completely secret. You can lie about what you played — or whether you played at all. This is the heart of the deduction.
+**Hold** — Contribute nothing and discard nothing. Your hand stays exactly the same.
+
+> Contribution decisions are completely secret. No one sees which card you played or discarded. This is the heart of the deduction.
 
 A ✓ appears next to each player's name when they have locked in their choice. Once everyone has submitted, the Draw Phase begins automatically — no one can change their decision.
 
-**A note on holding:** the game log records when a player holds. It is a visible action. Use it carefully — repeated holding on bad days is one of the strongest tells a Wretch can give.
+**A note on non-contributes:** the game log records whether each player contributed, discarded, or held. All three are visible actions. Holding and discarding are logged separately — if you discarded, others know a card left your hand. If you held, they know nothing left your hand. Use both carefully.
 
 ---
 
@@ -229,7 +231,7 @@ Encounters are world events — not played by any player. They enter the deck th
 **For the Crew:**
 
 - Pay attention to which resources dropped and by how much. Crew cards give moderate gains; Saboteur cards cause sharper, sometimes compounding drops.
-- Holding is logged publicly. If someone holds on the same day a bad card appears, that's worth bringing up at the campfire.
+- Holding and discarding are both logged publicly. If someone discarded on the same day a bad card appeared, ask what they got rid of — and why.
 - Persistent debuffs are a major red flag — Sand Sickness and Water Leak don't come from Crew cards.
 - Wagon Integrity starts at 3. It doesn't take many hits before you lose — prioritise Repair Kit when you have it.
 - Don't exile on Day 1 without strong evidence. A wrong exile removes a Crew member and leaves the Wretches stronger.
@@ -241,7 +243,7 @@ Encounters are world events — not played by any player. They enter the deck th
 - Time your sabotage around Dawn Events. Scorch Day doubles Food losses — a well-timed Spoiled Rations can be devastating.
 - Broken Axle is especially dangerous early — Wagon Integrity starts at 3 and a weakened repair can leave it near collapse.
 - Protect each other in votes without making it obvious. Vote against your Wretch partner only when they're clearly safe.
-- Holding is logged. Don't hold repeatedly — it draws suspicion. Contribute Crew cards to stay hidden.
+- Holding and discarding are both logged. Discarding too often raises the question of what you were getting rid of. Contribute Crew cards when possible to stay hidden. Use discard sparingly as a safety valve.
 - Sand Sickness and Water Leak are your most dangerous tools — persistent effects compound and are hard to undo.
 
 ---
@@ -287,7 +289,9 @@ The host can adjust these settings before starting:
 
 **Exile** — The result of a successful vote. The exiled player is removed from all future phases.
 
-**Hold** — Choosing not to contribute a card during the Contribution Phase. Logged publicly in the game log.
+**Discard** — Choosing to remove a card from your hand during the Contribution Phase without placing it in the Caravan Deck. Logged publicly. The discarded card is gone — it never resolves.
+
+**Hold** — Choosing not to contribute or discard during the Contribution Phase. Your hand stays the same. Logged publicly.
 
 **Persistent Effect** — A multi-day debuff applied by certain Saboteur cards. Triggers automatically at each Dawn Phase until it expires.
 
