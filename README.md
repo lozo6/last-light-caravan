@@ -8,6 +8,16 @@ Trust no one. Every card is a clue. Every vote could save you — or doom you.
 
 ---
 
+## 🚀 Before You Start
+
+- You need **at least 4 players** to begin — the game won't start with fewer
+- One player creates the room and shares the **4-letter room code** with everyone
+- All players must join before the host starts — you cannot join mid-game
+- Everyone needs the same URL open on their own device
+- The **host** controls the pace of the Dawn Event each day — everyone waits for them to hit Continue
+
+---
+
 ## 🎯 How to Win
 
 **Crew wins if:**
@@ -50,15 +60,19 @@ The caravan lives and dies by four shared resources, each tracked on a scale fro
 | 🌾 Food            | 6              | Rations for the journey         |
 | 💧 Water           | 6              | The most critical supply        |
 | 🔥 Morale          | 5              | The crew's will to survive      |
-| ⚙️ Wagon Integrity | 4              | The caravan's structural health |
+| ⚙️ Wagon Integrity | 3              | The caravan's structural health |
 
 > **If any resource hits 0, the Wretches win immediately — no matter what day it is.**
+
+Wagon Integrity starts lower than the others. It is the most vulnerable resource and the first place Wretches tend to strike.
 
 ---
 
 ## 🃏 Your Hand
 
-At the start of the game each player receives **5 cards**. Each new day you draw **2 more**, up to a maximum of **7 cards** in hand.
+At the start of the game each player receives **5 cards**. Each new day you draw **1 more card**, up to a maximum of **5 cards** in hand.
+
+The only way cards leave your hand is by contributing one during the Contribution Phase. If you hold every day, your hand stays full and you stop drawing — which is suspicious, and your teammates will notice.
 
 **Crew members** draw only Crew cards.
 **Wretches** draw mostly Crew cards but also receive Saboteur cards — giving them the choice to blend in or strike.
@@ -76,6 +90,8 @@ Each of the 7 days follows the same sequence of six phases:
 A Dawn Event card is revealed to all players. It sets a special rule that modifies how this day plays out. Read it carefully — it changes everything.
 
 Any **persistent effects** from previous days also trigger here before anything else.
+
+The host clicks **Continue** to move the caravan into the Contribution Phase.
 
 **Dawn Events:**
 
@@ -95,17 +111,19 @@ Every living player secretly chooses one of two actions:
 
 **Contribute** — Select one card from your hand and place it into the shared Caravan Deck. It is shuffled in with everyone else's contributions. No one sees what you played.
 
-**Hold** — Contribute nothing. Your hand stays the same. No one knows you held.
+**Hold** — Contribute nothing. Your hand stays the same.
 
 > Contribution decisions are completely secret. You can lie about what you played — or whether you played at all. This is the heart of the deduction.
 
-A ✓ appears next to each player's name when they have locked in their choice. Once everyone has submitted, the day moves forward automatically.
+A ✓ appears next to each player's name when they have locked in their choice. Once everyone has submitted, the Draw Phase begins automatically — no one can change their decision.
+
+**A note on holding:** the game log records when a player holds. It is a visible action. Use it carefully — repeated holding on bad days is one of the strongest tells a Wretch can give.
 
 ---
 
 ### Phase 3 — 🎴 Draw Phase
 
-The Caravan Deck is shuffled and **4 cards are drawn** (this number may be modified by the Dawn Event). These cards are revealed to all players and resolved in order.
+The Caravan Deck is shuffled and **3 cards are drawn** (this number may be modified by the Dawn Event). These cards are revealed to all players and resolved in order.
 
 ---
 
@@ -124,6 +142,8 @@ No mechanics. Pure conversation.
 You have **2 minutes** to talk, argue, accuse, defend, and strategize. Look at the resources. Look at the log. Who played what? Who held? Did the Dawn Event make things worse than it should have?
 
 This is where the social deduction happens. Use it.
+
+The host can end discussion early and move to the vote at any time.
 
 ---
 
@@ -209,8 +229,9 @@ Encounters are world events — not played by any player. They enter the deck th
 **For the Crew:**
 
 - Pay attention to which resources dropped and by how much. Crew cards give moderate gains; Saboteur cards cause sharper, sometimes compounding drops.
-- If someone always holds during Contribution, ask why. Holding is a valid strategy but suspicious when bad cards keep appearing.
+- Holding is logged publicly. If someone holds on the same day a bad card appears, that's worth bringing up at the campfire.
 - Persistent debuffs are a major red flag — Sand Sickness and Water Leak don't come from Crew cards.
+- Wagon Integrity starts at 3. It doesn't take many hits before you lose — prioritise Repair Kit when you have it.
 - Don't exile on Day 1 without strong evidence. A wrong exile removes a Crew member and leaves the Wretches stronger.
 - Use Scout's Insight and Clear Map strategically — knowing tomorrow's Dawn Event early is a huge advantage.
 
@@ -218,8 +239,9 @@ Encounters are world events — not played by any player. They enter the deck th
 
 - Blend in early. Play Crew cards in the first couple of days to build trust before striking.
 - Time your sabotage around Dawn Events. Scorch Day doubles Food losses — a well-timed Spoiled Rations can be devastating.
+- Broken Axle is especially dangerous early — Wagon Integrity starts at 3 and a weakened repair can leave it near collapse.
 - Protect each other in votes without making it obvious. Vote against your Wretch partner only when they're clearly safe.
-- Holding is sometimes safer than contributing a Saboteur card on a suspicious day.
+- Holding is logged. Don't hold repeatedly — it draws suspicion. Contribute Crew cards to stay hidden.
 - Sand Sickness and Water Leak are your most dangerous tools — persistent effects compound and are hard to undo.
 
 ---
@@ -227,13 +249,14 @@ Encounters are world events — not played by any player. They enter the deck th
 ## 🖥 How to Play Online
 
 1. One player creates a room and shares the **4-letter room code**
-2. All players join using that code before the host starts the game
-3. Roles are assigned secretly — check the role indicator on your screen
-4. Follow the phase prompts — the game moves automatically once all players have submitted
-5. Use the **chat** during Campfire Discussion to talk, accuse, and defend
-6. Vote when the Vote Phase begins — you have 60 seconds
+2. All other players join using that code — you need at least 4 to start
+3. Roles are assigned secretly when the host starts — check the role indicator on your screen
+4. The **host** clicks Continue at each Dawn Event to advance the day
+5. During Contribution Phase, select a card and hit Contribute — or hit Hold to pass
+6. Use the **chat** during Campfire Discussion to talk, accuse, and defend
+7. Vote when the Vote Phase begins — you have 60 seconds
 
-> The game runs in real time. All players should be ready before the host hits Start.
+> The game runs in real time. All players should be ready before the host hits Start. If the host disconnects, the game ends.
 
 ---
 
@@ -244,11 +267,11 @@ The host can adjust these settings before starting:
 | Setting             | Default | Description                                  |
 | ------------------- | ------- | -------------------------------------------- |
 | Number of Days      | 7       | Length of the journey                        |
-| Cards Drawn Per Day | 4       | How many cards are resolved each day         |
+| Cards Drawn Per Day | 3       | How many cards are resolved each day         |
 | Discussion Timer    | 120s    | Length of the Campfire Discussion            |
 | Vote Timer          | 60s     | Length of the Vote Phase                     |
 | Reveal Exiled Roles | On      | Whether exiled players have their role shown |
-| Max Players         | 10      | Room capacity                                |
+| Max Players         | 10      | Room capacity (minimum 4 to start)           |
 
 ---
 
@@ -264,7 +287,7 @@ The host can adjust these settings before starting:
 
 **Exile** — The result of a successful vote. The exiled player is removed from all future phases.
 
-**Hold** — Choosing not to contribute a card during the Contribution Phase. Your hand stays the same.
+**Hold** — Choosing not to contribute a card during the Contribution Phase. Logged publicly in the game log.
 
 **Persistent Effect** — A multi-day debuff applied by certain Saboteur cards. Triggers automatically at each Dawn Phase until it expires.
 
