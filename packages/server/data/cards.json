@@ -1,0 +1,424 @@
+[
+    {
+        "id": "CREW_WATER_CACHE",
+        "name": "Water Cache",
+        "type": "crew",
+        "flavour": "Someone remembered a buried jug from an old trade route.",
+        "effect": {
+            "resource": "water",
+            "change": 2,
+            "conditional": {
+                "if": "water < 5",
+                "bonus_change": 1
+            }
+        }
+    },
+    {
+        "id": "CREW_FOOD_FORAGE",
+        "name": "Food Forage",
+        "type": "crew",
+        "flavour": "The scrublands give up their bitter secrets.",
+        "effect": {
+            "resource": "food",
+            "change": 2,
+            "conditional": {
+                "if": "food_lost_yesterday",
+                "bonus_change": 1
+            }
+        }
+    },
+    {
+        "id": "CREW_CAMPFIRE_STORY",
+        "name": "Campfire Story",
+        "type": "crew",
+        "flavour": "An old tune, half-remembered. It still works.",
+        "effect": {
+            "resource": "morale",
+            "change": 2,
+            "conditional": {
+                "if": "morale_is_lowest",
+                "bonus_change": 1
+            }
+        }
+    },
+    {
+        "id": "CREW_REPAIR_KIT",
+        "name": "Repair Kit",
+        "type": "crew",
+        "flavour": "The crack in the axle has been there since Dustveil. Today someone fixed it.",
+        "effect": {
+            "resource": "integrity",
+            "change": 2,
+            "conditional": {
+                "if": "integrity < 3",
+                "bonus_change": 2
+            }
+        }
+    },
+    {
+        "id": "CREW_CLEAR_MAP",
+        "name": "Clear Map",
+        "type": "crew",
+        "flavour": "The route is clear. At least for now.",
+        "effect": {
+            "cancel_next_hazard": true
+        }
+    },
+    {
+        "id": "CREW_SCOUTS_INSIGHT",
+        "name": "Scout's Insight",
+        "type": "crew",
+        "flavour": "What waits at dawn is no longer a mystery.",
+        "effect": {
+            "reveal_next_dawn_event": true
+        }
+    },
+    {
+        "id": "CREW_EXTRA_RATIONS",
+        "name": "Extra Rations",
+        "type": "crew",
+        "flavour": "A hidden cache, shared equally.",
+        "effect": {
+            "multi_resource": [
+                {
+                    "resource": "food",
+                    "change": 1
+                },
+                {
+                    "resource": "morale",
+                    "change": 1
+                }
+            ]
+        }
+    },
+    {
+        "id": "CREW_MAKESHIFT_SHELTER",
+        "name": "Makeshift Shelter",
+        "type": "crew",
+        "flavour": "Canvas and rope. It won't hold forever, but it holds.",
+        "effect": {
+            "prevent_next_saboteur_effect": true
+        }
+    },
+    {
+        "id": "CREW_FRESH_TRACKS",
+        "name": "Fresh Tracks",
+        "type": "crew",
+        "flavour": "The scout reads the dunes like text.",
+        "effect": {
+            "reorder_next_drawn_cards": true
+        }
+    },
+    {
+        "id": "CREW_DESERT_HERBS",
+        "name": "Desert Herbs",
+        "type": "crew",
+        "flavour": "Bitter medicine. The kind that actually works.",
+        "effect": {
+            "remove_persistent_effect": true
+        }
+    },
+    {
+        "id": "SAB_WATER_LEAK",
+        "name": "Water Leak",
+        "type": "saboteur",
+        "flavour": "A small hole. Unnoticed until it is too late.",
+        "effect": {
+            "resource": "water",
+            "change": -2,
+            "persistent": {
+                "duration": 1,
+                "resource": "water",
+                "change": -1
+            }
+        }
+    },
+    {
+        "id": "SAB_SPOILED_RATIONS",
+        "name": "Spoiled Rations",
+        "type": "saboteur",
+        "flavour": "The smell should have warned them. Nobody checked.",
+        "effect": {
+            "resource": "food",
+            "change": -2,
+            "conditional": {
+                "if": "food > 7",
+                "bonus_change": -1
+            }
+        }
+    },
+    {
+        "id": "SAB_FALSE_MAP",
+        "name": "False Map",
+        "type": "saboteur",
+        "flavour": "A perfect forgery. The caravan won't realize until they're lost.",
+        "effect": {
+            "add_encounter_tomorrow": "ENC_FERAL_NOMADS"
+        }
+    },
+    {
+        "id": "SAB_BROKEN_AXLE",
+        "name": "Broken Axle",
+        "type": "saboteur",
+        "flavour": "One clean blow to the wood, hidden under mud.",
+        "effect": {
+            "resource": "integrity",
+            "change": -2,
+            "weaken_next_repair": true
+        }
+    },
+    {
+        "id": "SAB_DUST_CLOUD",
+        "name": "Dust Cloud",
+        "type": "saboteur",
+        "flavour": "The cards fall differently when the wind changes.",
+        "effect": {
+            "shuffle_drawn_cards": true
+        }
+    },
+    {
+        "id": "SAB_PANIC_WHISPER",
+        "name": "Panic Whisper",
+        "type": "saboteur",
+        "flavour": "\"Did you hear that? In the dark?\"",
+        "effect": {
+            "resource": "morale",
+            "change": -2,
+            "conditional": {
+                "if": "morale < 4",
+                "bonus_change": -1
+            }
+        }
+    },
+    {
+        "id": "SAB_SAND_SICKNESS",
+        "name": "Sand Sickness",
+        "type": "saboteur",
+        "flavour": "A fever that moves through the camp like a rumour.",
+        "effect": {
+            "persistent": {
+                "duration": 2,
+                "resource": "morale",
+                "change": -1
+            }
+        }
+    },
+    {
+        "id": "SAB_MIRAGE_OASIS",
+        "name": "Mirage Oasis",
+        "type": "saboteur",
+        "flavour": "Water on the horizon. The crew chases it for hours.",
+        "effect": {
+            "invert_next_positive_gain": true
+        }
+    },
+    {
+        "id": "SAB_HIDDEN_TRAP",
+        "name": "Hidden Trap",
+        "type": "saboteur",
+        "flavour": "Set in the night. Triggered at dawn.",
+        "effect": {
+            "double_first_encounter": true
+        }
+    },
+    {
+        "id": "SAB_INFESTED_SUPPLIES",
+        "name": "Infested Supplies",
+        "type": "saboteur",
+        "flavour": "They got into everything.",
+        "effect": {
+            "multi_resource": [
+                {
+                    "resource": "food",
+                    "change": -1
+                },
+                {
+                    "resource": "water",
+                    "change": -1
+                }
+            ]
+        }
+    },
+    {
+        "id": "ENC_WILD_JACKALS",
+        "name": "Wild Jackals",
+        "type": "encounter",
+        "flavour": "They come for the food. They always do.",
+        "effect": {
+            "resource": "food",
+            "change": -2
+        }
+    },
+    {
+        "id": "ENC_DUST_DEVIL",
+        "name": "Dust Devil",
+        "type": "encounter",
+        "flavour": "The column of sand twists between the wagons, indifferent.",
+        "effect": {
+            "redistribute_random_card_effect": true
+        }
+    },
+    {
+        "id": "ENC_MERCHANT_CARAVAN",
+        "name": "Merchant Caravan",
+        "type": "encounter",
+        "flavour": "They have what you need. For a price.",
+        "effect": {
+            "trade": {
+                "give": "food",
+                "give_amount": 1,
+                "receive": "water",
+                "receive_amount": 2
+            }
+        }
+    },
+    {
+        "id": "ENC_CANYON_NARROW",
+        "name": "Canyon Narrow",
+        "type": "encounter",
+        "flavour": "The walls close in. The deck grows heavier.",
+        "effect": {
+            "extra_draw_today": 1
+        }
+    },
+    {
+        "id": "ENC_RUINED_SHRINE",
+        "name": "Ruined Shrine",
+        "type": "encounter",
+        "flavour": "Something was worshipped here. Something still lingers.",
+        "effect": {
+            "multi_resource": [
+                {
+                    "resource": "morale",
+                    "change": 2
+                },
+                {
+                    "resource": "integrity",
+                    "change": -1
+                }
+            ]
+        }
+    },
+    {
+        "id": "ENC_FERAL_NOMADS",
+        "name": "Feral Nomads",
+        "type": "encounter",
+        "flavour": "Desperate people do desperate things.",
+        "effect": {
+            "multi_resource": [
+                {
+                    "resource": "food",
+                    "change": -1
+                },
+                {
+                    "resource": "morale",
+                    "change": -1
+                }
+            ]
+        }
+    },
+    {
+        "id": "ENC_DESERT_BLOOM",
+        "name": "Desert Bloom",
+        "type": "encounter",
+        "flavour": "Life where none should be. You take what you can.",
+        "effect": {
+            "multi_resource": [
+                {
+                    "resource": "food",
+                    "change": 1
+                },
+                {
+                    "resource": "water",
+                    "change": 1
+                }
+            ]
+        }
+    },
+    {
+        "id": "ENC_SAND_WYRM_TRACKS",
+        "name": "Sand Wyrm Tracks",
+        "type": "encounter",
+        "flavour": "Something enormous passed this way. Recently.",
+        "effect": {
+            "add_specific_card_tomorrow": "ENC_SANDSTORM"
+        }
+    },
+    {
+        "id": "ENC_SANDSTORM",
+        "name": "Sandstorm",
+        "type": "encounter",
+        "flavour": "The sky turns orange. You have minutes.",
+        "effect": {
+            "multi_resource": [
+                {
+                    "resource": "morale",
+                    "change": -1
+                },
+                {
+                    "resource": "integrity",
+                    "change": -2
+                }
+            ]
+        }
+    },
+    {
+        "id": "ENC_OASIS_REAL",
+        "name": "Oasis (Real)",
+        "type": "encounter",
+        "flavour": "It is real. The water is cold and clean.",
+        "effect": {
+            "resource": "water",
+            "change": 3,
+            "conditional": {
+                "if": "water < 4",
+                "bonus_change": 1
+            }
+        }
+    },
+    {
+        "id": "EVENT_SCORCH_DAY",
+        "name": "Scorch Day",
+        "type": "event",
+        "flavour": "The sun is a hammer today.",
+        "effect": {
+            "double_food_loss_today": true
+        }
+    },
+    {
+        "id": "EVENT_CLEAR_SKIES",
+        "name": "Clear Skies",
+        "type": "event",
+        "flavour": "A mercy from the desert. Take it.",
+        "effect": {
+            "cancel_first_hazard_today": true
+        }
+    },
+    {
+        "id": "EVENT_THIEVES_NEARBY",
+        "name": "Thieves Nearby",
+        "type": "event",
+        "flavour": "Eyes in the dunes. Watching. Waiting.",
+        "effect": {
+            "first_gain_becomes_loss_today": true
+        }
+    },
+    {
+        "id": "EVENT_TAILWIND",
+        "name": "Tailwind",
+        "type": "event",
+        "flavour": "The desert pushes you forward, for once.",
+        "effect": {
+            "draw_count_modifier": -1
+        }
+    },
+    {
+        "id": "EVENT_MIRAGE_FIELDS",
+        "name": "Mirage Fields",
+        "type": "event",
+        "flavour": "The heat bends everything. Even fate.",
+        "effect": {
+            "second_card_triggers_twice": true
+        }
+    }
+]

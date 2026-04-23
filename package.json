@@ -1,0 +1,13 @@
+{
+  "name": "last-light-caravan",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w packages/server\" \"npm run dev -w packages/client\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
