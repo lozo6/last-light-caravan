@@ -64,6 +64,7 @@ const PHASE_LABELS = {
 }
 
 const EVENT_NAMES = {
+  EVENT_CALM_MORNING:   { name: 'Calm Morning',    desc: 'The desert is still. No special conditions today.' },
   EVENT_SCORCH_DAY:     { name: 'Scorch Day',      desc: 'Food losses are doubled today.' },
   EVENT_CLEAR_SKIES:    { name: 'Clear Skies',     desc: 'The first hazard today is cancelled.' },
   EVENT_THIEVES_NEARBY: { name: 'Thieves Nearby',  desc: 'The first resource gain becomes a loss.' },
@@ -124,7 +125,7 @@ export default function Game() {
     chatMessages, lobby,
   } = useGameStore()
 
-  const [selectedCard,     setSelectedCard]     = useState(null)
+  const [selectedCardIdx,  setSelectedCardIdx]  = useState(null)  // track by index to handle duplicate card IDs
   const [chatInput,        setChatInput]         = useState('')
   const [showMobileLog,    setShowMobileLog]     = useState(false)
   const [contributedOnDay, setContributedOnDay] = useState(null)
@@ -139,15 +140,17 @@ export default function Game() {
   const currentEvent = EVENT_NAMES[currentEventId]
   const livingPlayers = players.filter(p => p.alive)
 
+  const selectedCard = selectedCardIdx !== null ? self?.hand?.[selectedCardIdx] : null
+
   function handleContribute() {
-    socket.emit('submit_contribution', { cardId: selectedCard, action: 'contribute' })
-    setSelectedCard(null)
+    socket.emit('submit_contribution', { cardId: selectedCard, cardIndex: selectedCardIdx, action: 'contribute' })
+    setSelectedCardIdx(null)
     setContributedOnDay(day)
   }
 
   function handleDiscard() {
-    socket.emit('submit_contribution', { cardId: selectedCard, action: 'discard' })
-    setSelectedCard(null)
+    socket.emit('submit_contribution', { cardId: selectedCard, cardIndex: selectedCardIdx, action: 'discard' })
+    setSelectedCardIdx(null)
     setContributedOnDay(day)
   }
 
@@ -250,14 +253,14 @@ export default function Game() {
             return (
               <div key={p.id} className={`flex items-center gap-2 ${!p.alive ? 'opacity-40' : ''}`}>
                 <span className={`w-2 h-2 rounded-full flex-shrink-0 ${p.connected ? 'bg-green-500' : 'bg-stone-600'}`} />
-                <span className="text-sm text-stone-300 truncate flex-1">{p.name}</span>
-                {p.isHost && <span className="text-xs text-amber-500">★</span>}
-                {!p.alive  && <span className="text-xs text-stone-600">✗</span>}
+                <span className="text-sm text-stone-300 truncate flex-1 text-left">{p.name}</span>
+                {p.isHost && <span className="text-xs text-amber-500 flex-shrink-0">★</span>}
+                {!p.alive  && <span className="text-xs text-stone-600 flex-shrink-0">✗</span>}
                 {phase === 'contribution' && contrib?.locked && p.alive && (
-                  <span className="text-xs text-green-500">✓</span>
+                  <span className="text-xs text-green-500 flex-shrink-0">✓</span>
                 )}
                 {phase === 'vote' && voteState?.votedPlayerIds?.includes(p.id) && p.alive && (
-                  <span className="text-xs text-amber-500">✓</span>
+                  <span className="text-xs text-amber-500 flex-shrink-0">✓</span>
                 )}
               </div>
             )
@@ -343,29 +346,79 @@ export default function Game() {
               </div>
             )}
 
-            {/* Cards resolved today — with position badges */}
-            {(phase === 'resolution' || phase === 'discussion') && todayDrawnCards.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs text-stone-500 uppercase tracking-wider">Cards Resolved Today</p>
-                <div className="flex flex-wrap gap-2">
+            {/* Draw Phase + Resolution — cards revealed with effects */}
+            {(phase === 'draw' || phase === 'resolution' || phase === 'discussion') && todayDrawnCards.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-stone-500 uppercase tracking-wider">Cards Drawn Today</p>
+                  {currentEvent && (
+                    <span className="text-xs text-amber-600 italic">{currentEvent.name} active</span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-3">
                   {[...todayDrawnCards]
                     .sort((a, b) => a.position - b.position)
-                    .map(ci => (
-                      <div
-                        key={ci.instanceId}
-                        className={`relative border-2 rounded-lg p-3 w-28 ${CARD_DATA[ci.cardId]?.color ?? 'bg-stone-800 border-stone-600'}`}
-                      >
-                        {/* Position badge */}
-                        <span className="absolute top-1 right-1 text-xs text-stone-400 font-mono">
-                          #{ci.position + 1}
-                        </span>
-                        <p className="text-xs font-semibold text-stone-100 pr-4">
-                          {CARD_DATA[ci.cardId]?.name ?? ci.cardId}
-                        </p>
-                      </div>
-                    ))
+                    .map(ci => {
+                      const cardDef  = CARD_DATA[ci.cardId]
+                      const cardName = cardDef?.name ?? ci.cardId
+                      const isSab    = ci.cardId?.startsWith('SAB_')
+                      const isCurse  = ci.cardId?.startsWith('CURSE_')
+                      const isEnc    = ci.cardId?.startsWith('ENC_')
+
+                      // Find matching log entries for this card's resolution
+                      const cardLog = log.filter(e =>
+                        e.message.startsWith(`[${cardName}]`) ||
+                        e.message.includes(`[${cardName}]`)
+                      ).slice(-1)[0]
+
+                      // Extract effect summary from log message
+                      const effectText = cardLog
+                        ? cardLog.message.replace(`[${cardName}]`, '').trim()
+                        : null
+
+                      return (
+                        <div
+                          key={ci.instanceId}
+                          className={`relative border-2 rounded-lg p-3 flex flex-col gap-1
+                            ${cardDef?.color ?? 'bg-stone-800 border-stone-600'}
+                            w-36`}
+                        >
+                          {/* Position badge */}
+                          <span className="absolute top-1 right-1 text-xs text-stone-400 font-mono">
+                            #{ci.position + 1}
+                          </span>
+
+                          {/* Card name */}
+                          <p className="text-xs font-semibold text-stone-100 pr-5 leading-tight">
+                            {cardName}
+                          </p>
+
+                          {/* Card type label */}
+                          {isSab   && <span className="text-xs text-red-400">⚠ Saboteur</span>}
+                          {isCurse && <span className="text-xs text-purple-400">☠ Curse</span>}
+                          {isEnc   && <span className="text-xs text-amber-400">⚡ Encounter</span>}
+
+                          {/* Effect summary from log */}
+                          {effectText && (
+                            <p className="text-xs text-stone-300 leading-tight mt-1 border-t border-stone-600 pt-1">
+                              {effectText}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    })
                   }
                 </div>
+
+                {/* Dawn Event modifier note */}
+                {currentEvent && phase !== 'contribution' && (
+                  <div className="bg-amber-950 border border-amber-800 rounded-lg px-3 py-2">
+                    <p className="text-xs text-amber-400">
+                      <span className="font-semibold">{currentEvent.name}:</span>{' '}
+                      {currentEvent.desc}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -448,8 +501,8 @@ export default function Game() {
                   <CardComponent
                     key={`${cardId}-${i}`}
                     cardId={cardId}
-                    selected={selectedCard === cardId}
-                    onClick={() => setSelectedCard(selectedCard === cardId ? null : cardId)}
+                    selected={selectedCardIdx === i}
+                    onClick={() => setSelectedCardIdx(selectedCardIdx === i ? null : i)}
                     disabled={phase !== 'contribution' || iLocked}
                   />
                 ))}

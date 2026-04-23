@@ -504,5 +504,12 @@
         "effect": {
             "second_card_triggers_twice": true
         }
+    },
+    {
+        "id": "EVENT_CALM_MORNING",
+        "name": "Calm Morning",
+        "type": "event",
+        "flavour": "The desert is still. For now, the road asks nothing of you.",
+        "effect": {}
     }
 ]

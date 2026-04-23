@@ -202,13 +202,13 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('submit_contribution', ({ cardId, action }) => {
+  socket.on('submit_contribution', ({ cardId, action, cardIndex }) => {
     const info = socketMap.get(socket.id);
     if (!info) return sendError(socket, 'Not in a room');
     const state = rooms.get(info.roomId);
     if (!state) return;
     try {
-      submitContribution(state, info.playerId, cardId ?? null, action ?? 'contribute');
+      submitContribution(state, info.playerId, cardId ?? null, action ?? 'contribute', cardIndex ?? null);
       broadcastState(info.roomId);
       if (state.phase === Phase.DISCUSSION) startDiscussionTimer(info.roomId);
     } catch (e) {

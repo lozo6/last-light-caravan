@@ -10,8 +10,10 @@ const ALL_CARDS = require('../data/cards.json');
 const CARD_MAP  = new Map(ALL_CARDS.map(c => [c.id, c]));
 
 const DAWN_EVENT_IDS = ALL_CARDS
-  .filter(c => c.type === CardType.EVENT)
+  .filter(c => c.type === CardType.EVENT && c.id !== 'EVENT_CALM_MORNING')
   .map(c => c.id);
+
+const NEUTRAL_EVENT_ID = 'EVENT_CALM_MORNING'; // Day 1 always neutral
 
 const CREW_CARD_IDS  = ALL_CARDS.filter(c => c.type === CardType.CREW).map(c => c.id);
 const SAB_CARD_IDS   = ALL_CARDS.filter(c => c.type === CardType.SABOTEUR).map(c => c.id);
@@ -76,20 +78,33 @@ function dealCards(cardIdPool, count) {
 }
 
 // Weighted draw — 20% curse chance for all, 30% saboteur chance for Wretches
+// Uses shuffled pools to avoid duplicate cards in the same hand
 function dealCardsWeighted(role, count) {
+  const crewPool   = shuffle([...CREW_CARD_IDS]);
+  const cursePool  = shuffle([...CURSE_CARD_IDS]);
+  const sabPool    = shuffle([...SAB_CARD_IDS]);
+  let crewIdx = 0, curseIdx = 0, sabIdx = 0;
+
   const result = [];
   for (let i = 0; i < count; i++) {
     const roll = Math.random();
-    let pool;
+    let cardId;
     if (role === Team.SABOTEUR) {
-      if (roll < 0.30)      pool = SAB_CARD_IDS;   // 30% saboteur
-      else if (roll < 0.50) pool = CURSE_CARD_IDS;  // 20% curse
-      else                  pool = CREW_CARD_IDS;   // 50% crew
+      if (roll < 0.30) {
+        cardId = sabPool[sabIdx % sabPool.length]; sabIdx++;
+      } else if (roll < 0.50) {
+        cardId = cursePool[curseIdx % cursePool.length]; curseIdx++;
+      } else {
+        cardId = crewPool[crewIdx % crewPool.length]; crewIdx++;
+      }
     } else {
-      if (roll < 0.20) pool = CURSE_CARD_IDS;       // 20% curse
-      else             pool = CREW_CARD_IDS;         // 80% crew
+      if (roll < 0.20) {
+        cardId = cursePool[curseIdx % cursePool.length]; curseIdx++;
+      } else {
+        cardId = crewPool[crewIdx % crewPool.length]; crewIdx++;
+      }
     }
-    result.push(pool[Math.floor(Math.random() * pool.length)]);
+    result.push(cardId);
   }
   return result;
 }
@@ -126,6 +141,10 @@ function startGame(state) {
   const playerCount = state.players.length;
   const numSaboteurs = settings.numSaboteurs ?? getSaboteurCount(playerCount);
 
+  // Guard: saboteurs must be fewer than crew, and at least 1 Crew must exist
+  if (numSaboteurs >= playerCount) throw new Error('Too many Saboteurs — must be fewer than total players');
+  if (playerCount - numSaboteurs < 2) throw new Error('Need at least 2 Crew members to start');
+
   const roles = shuffle([
     ...Array(numSaboteurs).fill(Team.SABOTEUR),
     ...Array(playerCount - numSaboteurs).fill(Team.CREW),
@@ -136,22 +155,28 @@ function startGame(state) {
 
   state.players.forEach(p => {
     if (p.role === Team.SABOTEUR) {
-      // Guarantee 1 saboteur card, rest weighted
-      const sabCard   = dealCards(SAB_CARD_IDS, 1);
-      const restCards = [];
+      // Guarantee 1 saboteur card, rest weighted without replacement
+      const sabPool   = shuffle([...SAB_CARD_IDS]);
+      const crewPool  = shuffle([...CREW_CARD_IDS]);
+      const cursePool = shuffle([...CURSE_CARD_IDS]);
+      let crewIdx = 0, curseIdx = 0;
+      const hand = [sabPool[0]]; // guaranteed 1 sab card
       for (let i = 0; i < settings.initialHandSize - 1; i++) {
         const roll = Math.random();
-        const pool = roll < 0.20 ? CURSE_CARD_IDS : CREW_CARD_IDS;
-        restCards.push(pool[Math.floor(Math.random() * pool.length)]);
+        if (roll < 0.20) { hand.push(cursePool[curseIdx % cursePool.length]); curseIdx++; }
+        else             { hand.push(crewPool[crewIdx % crewPool.length]);  crewIdx++;  }
       }
-      p.hand = shuffle([...sabCard, ...restCards]);
+      p.hand = shuffle(hand);
     } else {
-      // Crew: 80% crew, 20% curse
+      // Crew: 80% crew, 20% curse — without replacement
+      const crewPool  = shuffle([...CREW_CARD_IDS]);
+      const cursePool = shuffle([...CURSE_CARD_IDS]);
+      let crewIdx = 0, curseIdx = 0;
       const hand = [];
       for (let i = 0; i < settings.initialHandSize; i++) {
         const roll = Math.random();
-        const pool = roll < 0.20 ? CURSE_CARD_IDS : CREW_CARD_IDS;
-        hand.push(pool[Math.floor(Math.random() * pool.length)]);
+        if (roll < 0.20) { hand.push(cursePool[curseIdx % cursePool.length]); curseIdx++; }
+        else             { hand.push(crewPool[crewIdx % crewPool.length]);  crewIdx++;  }
       }
       p.hand = hand;
     }
@@ -180,7 +205,10 @@ function enterDawnEvent(state, skipDailyDraw = false) {
   if (checkWinConditions(state)) return;
 
   // Pick dawn event
-  if (state.nextEventId) {
+  if (state.day === 1) {
+    // Day 1 is always a calm, neutral start — no modifiers
+    state.currentEventId = NEUTRAL_EVENT_ID;
+  } else if (state.nextEventId) {
     state.currentEventId = state.nextEventId;
     state.nextEventId    = null;
   } else {
@@ -217,7 +245,7 @@ function enterContribution(state) {
   addLog(state, `Day ${state.day} — Contribution Phase. Players secretly choose their cards.`);
 }
 
-function submitContribution(state, playerId, cardId, action = ContributionAction.CONTRIBUTE) {
+function submitContribution(state, playerId, cardId, action = ContributionAction.CONTRIBUTE, cardIndex = null) {
   if (state.phase !== Phase.CONTRIBUTION) throw new Error('Not in contribution phase');
 
   const player = state.players.find(p => p.id === playerId);
@@ -227,10 +255,17 @@ function submitContribution(state, playerId, cardId, action = ContributionAction
   if (!contrib) throw new Error('No contribution record for player');
   if (contrib.locked) throw new Error('Already submitted');
 
+  // Remove exactly one card from hand by index if valid, else fall back to indexOf
+  function removeOneFromHand(hand, id, idx) {
+    const removeAt = (idx !== null && idx >= 0 && hand[idx] === id) ? idx : hand.indexOf(id);
+    if (removeAt === -1) throw new Error('Card not in hand');
+    return [...hand.slice(0, removeAt), ...hand.slice(removeAt + 1)];
+  }
+
   if (action === ContributionAction.CONTRIBUTE && cardId) {
     // Contribute — card enters the Caravan Deck
     if (!player.hand.includes(cardId)) throw new Error('Card not in hand');
-    player.hand = player.hand.filter(id => id !== cardId);
+    player.hand = removeOneFromHand(player.hand, cardId, cardIndex);
     const instance = makeCardInstance(cardId, playerId, 'player');
     state.caravanDeck.push(instance);
     contrib.contributedCardId      = cardId;
@@ -242,7 +277,7 @@ function submitContribution(state, playerId, cardId, action = ContributionAction
     // Discard — removed from hand
     // Saboteur cards permanently gone, everything else goes to reshuffle pile
     if (!player.hand.includes(cardId)) throw new Error('Card not in hand');
-    player.hand = player.hand.filter(id => id !== cardId);
+    player.hand = removeOneFromHand(player.hand, cardId, cardIndex);
     const def = CARD_MAP.get(cardId);
     if (def?.type === CardType.SABOTEUR) {
       // Permanent removal — goes to discard pile, never returns
