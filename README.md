@@ -130,25 +130,25 @@ A ✓ appears next to each player's name when they have locked in their choice. 
 
 ### Phase 3 — 🎴 Draw Phase
 
-The Caravan Deck is shuffled and **3 cards are drawn** (this number may be modified by the Dawn Event). All 3 cards are revealed to every player at once, each showing:
+The Caravan Deck is shuffled and **3 cards are drawn** (this number may be modified by the Dawn Event). All 3 cards are revealed to every player at once — you can see the card name and type before effects are applied.
 
-- The card name and type
-- The effect that was applied (e.g. Water -2, Morale +1 persistent 2 days)
-- Whether the Dawn Event modified the outcome (e.g. Clear Skies cancelled a hazard, Scorch Day doubled a food loss)
+The host then clicks **Resolve Cards →** to trigger resolution. This gives everyone a moment to see what was drawn and discuss before committing to the outcome.
 
-Cards are numbered #1, #2, #3 in the order they resolved — this matters for position-dependent events like Mirage Fields (second card triggers twice) and Clear Skies (first hazard cancelled).
-
----
+Cards are numbered #1, #2, #3 in the order they resolve — this matters for position-dependent events like Mirage Fields (second card triggers twice) and Clear Skies (first hazard cancelled).
 
 ### Phase 4 — ⚡ Resolution Phase
 
-Each drawn card is resolved one at a time, left to right. Effects apply immediately — resource gains and losses, persistent debuffs, encounter spawns, and modifier chains all happen here.
+Each drawn card resolves one at a time in order. Effects apply immediately — resource gains and losses, persistent debuffs, encounter spawns, and modifier chains all happen here.
+
+After resolution, the Discussion Phase begins automatically. The resolved cards remain visible with their full effect summary so players can reference them during the campfire discussion.
 
 Watch the game log carefully. Every card effect is recorded. This is your evidence.
 
 ---
 
-### Phase 5 — 🔥 Campfire Discussion
+---
+
+### Phase 4 — 🔥 Campfire Discussion
 
 No mechanics. Pure conversation.
 
@@ -160,7 +160,7 @@ The host can end discussion early and move to the vote at any time.
 
 ---
 
-### Phase 6 — 🗳 Vote Phase
+### Phase 5 — 🗳 Vote Phase
 
 After discussion, it's time to vote. Each living player may:
 
@@ -284,10 +284,11 @@ Curse cards appear in your hand marked with a **purple ☠ Curse** label so you 
 1. One player creates a room and shares the **4-letter room code**
 2. All other players join using that code — you need at least 4 to start
 3. Roles are assigned secretly when the host starts — check the role indicator on your screen
-4. The **host** clicks Continue at each Dawn Event to advance the day
+4. The **host** clicks Continue at each Dawn Event, then Resolve Cards → during the Draw Phase
 5. During Contribution Phase, select a card and hit Contribute, Discard, or Hold — all three are logged
-6. Use the **chat** during Campfire Discussion to talk, accuse, and defend
-7. Vote when the Vote Phase begins — you have 60 seconds
+6. **Hover over any card** to see its effect description and flavour text — available in your hand and on resolved cards
+7. Use the **chat** during Campfire Discussion to talk, accuse, and defend
+8. Vote when the Vote Phase begins — you have 60 seconds
 
 > The game runs in real time. All players should be ready before the host hits Start. If the host disconnects, the game ends.
 
