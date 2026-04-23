@@ -66,12 +66,12 @@ export default function Lobby() {
             {isHost ? (
               <Button
                 onClick={handleStart}
-                disabled={players.length < 2}
-                // disabled={players.length < 4}
+                // disabled={players.length < 2}
+                disabled={players.length < 4}
                 className="w-full bg-amber-600 hover:bg-amber-500 text-stone-950"
               >
-                {players.length < 2 ? 'Waiting for players...' : 'Start Game'}
-                {/* {players.length < 4 ? `Waiting for players... (${players.length}/4)` : 'Start Game'} */}
+                {/* {players.length < 2 ? 'Waiting for players...' : 'Start Game'} */}
+                {players.length < 4 ? `Waiting for players... (${players.length}/4)` : 'Start Game'}
               </Button>
             ) : (
               <p className="text-stone-500 text-sm text-center">Waiting for host to start...</p>

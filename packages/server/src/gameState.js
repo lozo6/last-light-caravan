@@ -100,8 +100,8 @@ function checkWinConditions(state) {
 
 function startGame(state) {
   if (state.phase !== Phase.LOBBY) throw new Error('Game already started');
-  if (state.players.length < 2) throw new Error('Need at least 2 players');
-  // if (state.players.length < 4) throw new Error('Need at least 4 players');
+  // if (state.players.length < 2) throw new Error('Need at least 2 players');
+  if (state.players.length < 4) throw new Error('Need at least 4 players');
 
   const settings = state.settings;
   const playerCount = state.players.length;
