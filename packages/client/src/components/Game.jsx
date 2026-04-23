@@ -37,6 +37,13 @@ const CARD_DATA = {
   ENC_SAND_WYRM_TRACKS:   { name: 'Sand Wyrm Tracks',  color: 'bg-amber-900 border-amber-700' },
   ENC_SANDSTORM:          { name: 'Sandstorm',         color: 'bg-amber-900 border-amber-700' },
   ENC_OASIS_REAL:         { name: 'Oasis (Real)',       color: 'bg-amber-900 border-amber-700' },
+  // Curse cards
+  CURSE_HEAT_EXHAUSTION:  { name: 'Heat Exhaustion',   color: 'bg-purple-900 border-purple-700' },
+  CURSE_SCORPION_STING:   { name: 'Scorpion Sting',    color: 'bg-purple-900 border-purple-700' },
+  CURSE_CRACKED_CANTEEN:  { name: 'Cracked Canteen',   color: 'bg-purple-900 border-purple-700' },
+  CURSE_LOOSE_WHEEL:      { name: 'Loose Wheel',       color: 'bg-purple-900 border-purple-700' },
+  CURSE_DESERT_WIND:      { name: 'Desert Wind',       color: 'bg-purple-900 border-purple-700' },
+  CURSE_SUNSTROKE:        { name: 'Sunstroke',         color: 'bg-purple-900 border-purple-700' },
 }
 
 const RESOURCE_ICONS = {
@@ -86,8 +93,9 @@ function ResourceBar({ resource, value, max = 10 }) {
 }
 
 function CardComponent({ cardId, selected, onClick, disabled }) {
-  const card   = CARD_DATA[cardId] ?? { name: cardId, color: 'bg-stone-800 border-stone-600' }
-  const isSab  = cardId?.startsWith('SAB_')
+  const card    = CARD_DATA[cardId] ?? { name: cardId, color: 'bg-stone-800 border-stone-600' }
+  const isSab   = cardId?.startsWith('SAB_')
+  const isCurse = cardId?.startsWith('CURSE_')
 
   return (
     <button
@@ -101,7 +109,8 @@ function CardComponent({ cardId, selected, onClick, disabled }) {
       `}
     >
       <p className="text-xs font-semibold text-stone-100 leading-tight">{card.name}</p>
-      {isSab && <p className="text-xs text-red-400 mt-1">⚠ Wretch</p>}
+      {isSab   && <p className="text-xs text-red-400 mt-1">⚠ Wretch</p>}
+      {isCurse && <p className="text-xs text-purple-400 mt-1">☠ Curse</p>}
     </button>
   )
 }
@@ -111,7 +120,7 @@ export default function Game() {
     phase, day, resources, players, self,
     currentEventId, todayDrawnCards, persistentEffects,
     voteState, contributionStatus, log, settings,
-    winner, gameOverReason, caravanDeckCount,
+    winner, gameOverReason, caravanDeckCount, reshufflePileCount,
     chatMessages, lobby,
   } = useGameStore()
 
@@ -424,6 +433,9 @@ export default function Game() {
 
             <div className="flex gap-3 text-xs text-stone-600">
               <span>Deck: {caravanDeckCount} cards</span>
+              {reshufflePileCount > 0 && (
+                <span>Reshuffle: {reshufflePileCount} cards</span>
+              )}
             </div>
           </div>
 

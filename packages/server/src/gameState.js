@@ -13,8 +13,9 @@ const DAWN_EVENT_IDS = ALL_CARDS
   .filter(c => c.type === CardType.EVENT)
   .map(c => c.id);
 
-const CREW_CARD_IDS = ALL_CARDS.filter(c => c.type === CardType.CREW).map(c => c.id);
-const SAB_CARD_IDS  = ALL_CARDS.filter(c => c.type === CardType.SABOTEUR).map(c => c.id);
+const CREW_CARD_IDS  = ALL_CARDS.filter(c => c.type === CardType.CREW).map(c => c.id);
+const SAB_CARD_IDS   = ALL_CARDS.filter(c => c.type === CardType.SABOTEUR).map(c => c.id);
+const CURSE_CARD_IDS = ALL_CARDS.filter(c => c.type === CardType.CURSE).map(c => c.id);
 
 function uuidv4() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -74,6 +75,25 @@ function dealCards(cardIdPool, count) {
   return result;
 }
 
+// Weighted draw — 20% curse chance for all, 30% saboteur chance for Wretches
+function dealCardsWeighted(role, count) {
+  const result = [];
+  for (let i = 0; i < count; i++) {
+    const roll = Math.random();
+    let pool;
+    if (role === Team.SABOTEUR) {
+      if (roll < 0.30)      pool = SAB_CARD_IDS;   // 30% saboteur
+      else if (roll < 0.50) pool = CURSE_CARD_IDS;  // 20% curse
+      else                  pool = CREW_CARD_IDS;   // 50% crew
+    } else {
+      if (roll < 0.20) pool = CURSE_CARD_IDS;       // 20% curse
+      else             pool = CREW_CARD_IDS;         // 80% crew
+    }
+    result.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+  return result;
+}
+
 function checkWinConditions(state) {
   const { resources, players } = state;
 
@@ -116,11 +136,24 @@ function startGame(state) {
 
   state.players.forEach(p => {
     if (p.role === Team.SABOTEUR) {
-      const crewCards = dealCards(CREW_CARD_IDS, settings.initialHandSize - 1);
-      const sabCards  = dealCards(SAB_CARD_IDS, 1);
-      p.hand = shuffle([...crewCards, ...sabCards]);
+      // Guarantee 1 saboteur card, rest weighted
+      const sabCard   = dealCards(SAB_CARD_IDS, 1);
+      const restCards = [];
+      for (let i = 0; i < settings.initialHandSize - 1; i++) {
+        const roll = Math.random();
+        const pool = roll < 0.20 ? CURSE_CARD_IDS : CREW_CARD_IDS;
+        restCards.push(pool[Math.floor(Math.random() * pool.length)]);
+      }
+      p.hand = shuffle([...sabCard, ...restCards]);
     } else {
-      p.hand = dealCards(CREW_CARD_IDS, settings.initialHandSize);
+      // Crew: 80% crew, 20% curse
+      const hand = [];
+      for (let i = 0; i < settings.initialHandSize; i++) {
+        const roll = Math.random();
+        const pool = roll < 0.20 ? CURSE_CARD_IDS : CREW_CARD_IDS;
+        hand.push(pool[Math.floor(Math.random() * pool.length)]);
+      }
+      p.hand = hand;
     }
   });
 
@@ -172,10 +205,7 @@ function enterDawnEvent(state, skipDailyDraw = false) {
         state.settings.maxHandSize - p.hand.length
       );
       if (drawCount > 0) {
-        const pool = p.role === Team.SABOTEUR
-          ? [...CREW_CARD_IDS, ...SAB_CARD_IDS]
-          : CREW_CARD_IDS;
-        const drawn = dealCards(pool, drawCount);
+        const drawn = dealCardsWeighted(p.role, drawCount);
         p.hand.push(...drawn);
       }
     });
@@ -209,10 +239,18 @@ function submitContribution(state, playerId, cardId, action = ContributionAction
     addLog(state, `${player.name} contributed a card.`);
 
   } else if (action === ContributionAction.DISCARD && cardId) {
-    // Discard — card removed from hand, goes to discard pile, never enters deck
+    // Discard — removed from hand
+    // Saboteur cards permanently gone, everything else goes to reshuffle pile
     if (!player.hand.includes(cardId)) throw new Error('Card not in hand');
     player.hand = player.hand.filter(id => id !== cardId);
-    state.discardPile.push(makeCardInstance(cardId, playerId, 'discarded'));
+    const def = CARD_MAP.get(cardId);
+    if (def?.type === CardType.SABOTEUR) {
+      // Permanent removal — goes to discard pile, never returns
+      state.discardPile.push(makeCardInstance(cardId, playerId, 'discarded'));
+    } else {
+      // Crew or curse card — goes to reshuffle pile, returns when deck empties
+      state.reshufflePile.push(makeCardInstance(cardId, playerId, 'discarded'));
+    }
     contrib.action = ContributionAction.DISCARD;
     addLog(state, `${player.name} discarded a card.`);
 
@@ -237,6 +275,13 @@ function enterDraw(state) {
   const event = CARD_MAP.get(state.currentEventId);
   if (event?.effect?.draw_count_modifier) {
     drawCount = Math.max(1, drawCount + event.effect.draw_count_modifier);
+  }
+
+  // If deck is empty or too thin, reshuffle the reshuffle pile back in
+  if (state.caravanDeck.length < drawCount && state.reshufflePile.length > 0) {
+    addLog(state, `The deck runs thin — discarded cards return to the pile.`);
+    state.caravanDeck.push(...state.reshufflePile);
+    state.reshufflePile = [];
   }
 
   state.caravanDeck = shuffle(state.caravanDeck);
@@ -545,6 +590,7 @@ function createGameState(roomId, hostSocketId, hostName) {
     persistentEffects: [],
     caravanDeck:      [],
     discardPile:      [],
+    reshufflePile:    [],
     todayDrawnCards:  [],
     contributions:    {},
     currentEventId:   null,
@@ -585,8 +631,9 @@ function buildPublicGameView(state) {
       resource:      e.resource,
       change:        e.change,
     })),
-    caravanDeckCount: state.caravanDeck.length,
-    discardPileCount: state.discardPile.length,
+    caravanDeckCount:  state.caravanDeck.length,
+    discardPileCount:  state.discardPile.length,
+    reshufflePileCount: state.reshufflePile.length,
     voteState: state.voteState ? {
       isActive:       state.voteState.isActive,
       day:            state.voteState.day,

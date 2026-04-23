@@ -21,6 +21,7 @@ const CardType = {
   SABOTEUR:  'saboteur',
   ENCOUNTER: 'encounter',
   EVENT:     'event',
+  CURSE:     'curse',
 };
 
 const ContributionAction = {

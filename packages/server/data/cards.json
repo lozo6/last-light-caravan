@@ -240,6 +240,90 @@
         }
     },
     {
+        "id": "CURSE_HEAT_EXHAUSTION",
+        "name": "Heat Exhaustion",
+        "type": "curse",
+        "flavour": "Someone falls behind. The pace suffers.",
+        "effect": {
+            "persistent": {
+                "duration": 2,
+                "resource": "morale",
+                "change": -1
+            }
+        }
+    },
+    {
+        "id": "CURSE_SCORPION_STING",
+        "name": "Scorpion Sting",
+        "type": "curse",
+        "flavour": "Found in the bedroll at dawn. A bad omen and a worse morning.",
+        "effect": {
+            "multi_resource": [
+                {
+                    "resource": "food",
+                    "change": -1
+                },
+                {
+                    "resource": "morale",
+                    "change": -1
+                }
+            ]
+        }
+    },
+    {
+        "id": "CURSE_CRACKED_CANTEEN",
+        "name": "Cracked Canteen",
+        "type": "curse",
+        "flavour": "The seal gave out overnight. Half a day's water, gone.",
+        "effect": {
+            "resource": "water",
+            "change": -1,
+            "persistent": {
+                "duration": 1,
+                "resource": "water",
+                "change": -1
+            }
+        }
+    },
+    {
+        "id": "CURSE_LOOSE_WHEEL",
+        "name": "Loose Wheel",
+        "type": "curse",
+        "flavour": "The road took its toll. It always does.",
+        "effect": {
+            "resource": "integrity",
+            "change": -1
+        }
+    },
+    {
+        "id": "CURSE_DESERT_WIND",
+        "name": "Desert Wind",
+        "type": "curse",
+        "flavour": "Stripped supplies in the night. Nobody's fault. Nobody's comfort.",
+        "effect": {
+            "multi_resource": [
+                {
+                    "resource": "food",
+                    "change": -1
+                },
+                {
+                    "resource": "water",
+                    "change": -1
+                }
+            ]
+        }
+    },
+    {
+        "id": "CURSE_SUNSTROKE",
+        "name": "Sunstroke",
+        "type": "curse",
+        "flavour": "The heat claims another. The caravan slows.",
+        "effect": {
+            "resource": "morale",
+            "change": -2
+        }
+    },
+    {
         "id": "ENC_WILD_JACKALS",
         "name": "Wild Jackals",
         "type": "encounter",
